@@ -1,0 +1,10 @@
+# Python files and folders
+**/__pycache__
+
+# Editors and IDEs
+.idea
+.vscode
+
+# Environment
+env
+.env
