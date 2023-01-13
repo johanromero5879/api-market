@@ -2,6 +2,7 @@ from typing import List
 from fastapi import APIRouter, HTTPException, status
 from app.common.container import user_service
 from app.user.domain.user import User, UserCreate
+from app.user.application.user_errors import UserNotFoundError
 
 router = APIRouter(
     prefix="/users",
@@ -23,7 +24,7 @@ async def create(user: UserCreate):
 async def user(id: str):
     try:
         return user_service.get_by_id(id)
-    except ValueError as error:
+    except UserNotFoundError as error:
         raise HTTPException(status_code=404, detail=str(error))
 
 
@@ -31,7 +32,7 @@ async def user(id: str):
 async def update(id: str, user: User):
     try:
         return user_service.update_one(id, user)
-    except ValueError as error:
+    except UserNotFoundError as error:
         raise HTTPException(status_code=404, detail=str(error))
 
 
@@ -39,5 +40,5 @@ async def update(id: str, user: User):
 async def delete(id: str):
     try:
         user_service.delete(id)
-    except ValueError as error:
+    except UserNotFoundError as error:
         raise HTTPException(status_code=404, detail=str(error))

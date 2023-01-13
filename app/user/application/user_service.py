@@ -1,6 +1,7 @@
 from app.common.application.service import Service
 from app.user.domain.user_repository import UserRepository
 from app.user.domain.user import User
+from app.user.application.user_errors import UserNotFoundError
 
 
 class UserService(Service):
@@ -16,7 +17,7 @@ class UserService(Service):
         user = self._repository.find_by_id(id)
 
         if not user:
-            raise ValueError(f"User with id '{id}' not found")
+            raise UserNotFoundError(id=id)
 
         return user
 
@@ -24,7 +25,7 @@ class UserService(Service):
         user = self._repository.find_by_email(email)
 
         if not user:
-            raise ValueError(f"Email '{email}' not found")
+            raise UserNotFoundError(email=email)
 
         return user
 
@@ -33,12 +34,12 @@ class UserService(Service):
 
     def update_one(self, id: str, user: User):
         if not self._repository.exists_id(id):
-            raise ValueError(f"User with id '{id}' not found")
+            raise UserNotFoundError(id=id)
 
         return self._repository.update_one(id, user)
 
     def delete(self, id: str):
         if not self._repository.exists_id(id):
-            raise ValueError(f"User with id '{id}' not found")
+            raise UserNotFoundError(id=id)
 
         self._repository.delete(id)
