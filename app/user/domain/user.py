@@ -7,10 +7,10 @@ class User(BaseModel):
     first_name: Optional[str]
     last_name: Optional[str]
     email: Optional[str]
+    disabled: bool = False
 
 
 class UserCreate(User):
     first_name: str
     last_name: str
     email: str
-

@@ -1,4 +1,4 @@
-# Api market
+# API Market
 A simple api for market and user auth.
 
 ### Requirements

@@ -25,7 +25,7 @@ async def user(id: str):
     try:
         return user_service.get_by_id(id)
     except UserNotFoundError as error:
-        raise HTTPException(status_code=404, detail=str(error))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))
 
 
 @router.patch("/{id}", response_model=User)
@@ -33,7 +33,7 @@ async def update(id: str, user: User):
     try:
         return user_service.update_one(id, user)
     except UserNotFoundError as error:
-        raise HTTPException(status_code=404, detail=str(error))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -41,4 +41,4 @@ async def delete(id: str):
     try:
         user_service.delete(id)
     except UserNotFoundError as error:
-        raise HTTPException(status_code=404, detail=str(error))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))

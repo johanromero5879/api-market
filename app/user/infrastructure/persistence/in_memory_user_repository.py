@@ -8,7 +8,7 @@ users_list = [
     User(id='1', first_name="John", last_name="Titor", email="john.titor@cern.gov"),
     User(id='2', first_name="Rachell", last_name="", email="rachell@outlook.com"),
     User(id='3', first_name="Sara", last_name="Claire", email="sara.claire@cern.gov"),
-    User(id='4', first_name="Johan", last_name="Romero", email="johan.romero@gmail.com"),
+    User(id='4', first_name="Johan", last_name="Romero", email="johan.romero@gmail.com", disabled=True),
     User(id='5', first_name="Camila", last_name="Torres", email="camila.torres@gmail.com")
 ]
 
