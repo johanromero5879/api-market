@@ -1,16 +1,15 @@
 from abc import abstractmethod
-from typing import List, Optional
 from app.common.domain.repository import Repository
 from app.user.domain.user import User, UserCreate
 
 
 class UserRepository(Repository):
     @abstractmethod
-    def find_all(self, limit: int, skip: int) -> List[User]:
+    def find_all(self, limit: int, skip: int) -> list[User]:
         pass
 
     @abstractmethod
-    def find_by_id(self, id: str) -> Optional[User]:
+    def find_by_id(self, id: str) -> User | None:
         pass
 
     @abstractmethod
@@ -18,7 +17,7 @@ class UserRepository(Repository):
         pass
 
     @abstractmethod
-    def find_by_email(self, email: str) -> Optional[User]:
+    def find_by_email(self, email: str) -> User | None:
         pass
 
     @abstractmethod
@@ -26,7 +25,7 @@ class UserRepository(Repository):
         pass
 
     @abstractmethod
-    def insert_one(self, user: User) -> User:
+    def insert_one(self, user: UserCreate) -> User:
         pass
 
     @abstractmethod

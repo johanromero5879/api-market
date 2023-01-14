@@ -3,8 +3,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 # Import routes
-from app.user.infrastructure.rest import user_routes
-from app.auth.infrastructure.rest import auth_routes
+from app.user.infrastructure import user_routes
+from app.auth.infrastructure import auth_routes
 
 # App setup
 app = FastAPI()

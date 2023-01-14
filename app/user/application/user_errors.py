@@ -1,8 +1,5 @@
-from typing import Optional
-
-
 class UserNotFoundError(Exception):
-    def __init__(self, id: Optional[str] = None, email: Optional[str] = None):
+    def __init__(self, id: str | None = None, email: str | None = None):
         self.message = "User not found"
         if bool(id):
             self.message = f"User with id '{id}' not found"

@@ -1,14 +1,17 @@
 from app.common.application.service import Service
 from app.user.domain.user_repository import UserRepository
-from app.user.domain.user import User
+from app.user.domain.user import UserCreate, User
 from app.user.application.user_errors import UserNotFoundError
+from app.common.application.bcrypt_service import BCryptService
 
 
 class UserService(Service):
     _repository: UserRepository
+    __bcrypt_service: BCryptService
 
     def __init__(self, repository: UserRepository):
         super().__init__(repository)
+        self.__bcrypt_service = BCryptService()
 
     def get_all(self, limit: int, skip: int):
         return self._repository.find_all(limit, skip)
@@ -29,7 +32,7 @@ class UserService(Service):
 
         return user
 
-    def create_one(self, user: User) -> User:
+    def create_one(self, user: UserCreate) -> User:
         return self._repository.insert_one(user)
 
     def update_one(self, id: str, user: User):

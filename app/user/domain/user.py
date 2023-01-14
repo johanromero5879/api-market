@@ -1,12 +1,11 @@
-from typing import Optional
 from pydantic import BaseModel
 
 
 class User(BaseModel):
-    id: Optional[str]
-    first_name: Optional[str]
-    last_name: Optional[str]
-    email: Optional[str]
+    id: str | None
+    first_name: str | None
+    last_name: str | None
+    email: str | None
     disabled: bool = False
 
 

@@ -1,8 +1,9 @@
-from typing import List
-from fastapi import APIRouter, HTTPException, status
-from app.common.container import user_service
+from fastapi import APIRouter, HTTPException, status, Depends
+
 from app.user.domain.user import User, UserCreate
 from app.user.application.user_errors import UserNotFoundError
+from app.auth.infrastructure.auth_middlewares import current_user
+from app.common.container import user_service
 
 router = APIRouter(
     prefix="/users",
@@ -10,7 +11,12 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=List[User])
+@router.get("/me", response_model=User)
+async def me(user: User = Depends(current_user)):
+    return user
+
+
+@router.get("/", response_model=list[User])
 async def users(limit: int = 10, skip: int = 0):
     return user_service.get_all(limit, skip)
 

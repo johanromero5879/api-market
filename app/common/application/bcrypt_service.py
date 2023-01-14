@@ -10,3 +10,5 @@ class BCryptService:
     def compare(self, text: str, hash: str) -> bool:
         return bool(self.__crypt.verify(text, hash))
 
+    def create_hash(self, text: str) -> str:
+        return self.__crypt.hash(text)
