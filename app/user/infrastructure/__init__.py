@@ -1,0 +1,2 @@
+from .persistence.in_memory_data import users_list
+from .persistence.in_memory_user_repository import InMemoryUserRepository

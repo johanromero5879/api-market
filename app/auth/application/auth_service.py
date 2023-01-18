@@ -1,20 +1,7 @@
-from pydantic import BaseModel
-
-from app.common.application.service import Service
-from app.auth.domain.auth_repository import AuthRepository
-from app.auth.application.auth_errors import CredentialsError
-from app.common.domain.value_id import ValueID
-from app.common.application.jwt_service import JWTService
-from app.common.application.bcrypt_service import BCryptService
-
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-
-class TokenData(BaseModel):
-    user_id: ValueID | None = None
+from app.common.application import Service
+from app.auth.domain import AuthRepository, Token, TokenData
+from app.auth.application import CredentialsError
+from app.common.application import JWTService, BCryptService
 
 
 class AuthService(Service):

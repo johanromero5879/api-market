@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from app.common.domain.value_id import ValueID
+from app.common.domain import ValueID
 
 
 class User(BaseModel):

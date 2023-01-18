@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 
-from app.user.domain.user import User, UserCreate
-from app.user.application.user_errors import UserNotFoundError
-from app.auth.infrastructure.auth_middlewares import current_user
-from app.common.domain.value_id import ValueID
+from app.user.domain import User, UserCreate
+from app.user.application import UserNotFoundError
+from app.auth.infrastructure import get_current_user
+from app.common.domain import ValueID
 from app.common.container import user_service
 
 router = APIRouter(
@@ -13,7 +13,7 @@ router = APIRouter(
 
 
 @router.get("/me", response_model=User)
-async def me(user: User = Depends(current_user)):
+async def me(user: User = Depends(get_current_user)):
     return user
 
 

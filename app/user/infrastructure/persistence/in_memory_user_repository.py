@@ -1,7 +1,5 @@
-from app.user.domain.user import User, UserCreate
-from app.user.domain.user_repository import UserRepository
-
-from app.user.infrastructure.persistence.in_memory_data import users_list
+from app.user.domain import User, UserCreate, UserRepository
+from app.user.infrastructure import users_list
 
 
 class InMemoryUserRepository(UserRepository):
@@ -27,7 +25,7 @@ class InMemoryUserRepository(UserRepository):
 
     def insert_one(self, user: UserCreate) -> User:
         if len(users_list) > 0:
-            user.id = str(int(users_list[-1].id) + 1)
+            user.id = int(users_list[-1].id) + 1
         else:
             user.id = 1
 

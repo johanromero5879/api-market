@@ -1,7 +1,6 @@
 from abc import abstractmethod
-from app.common.domain.repository import Repository
-from app.user.domain.user import User, UserCreate
-from app.common.domain.value_id import ValueID
+from app.common.domain import Repository, ValueID
+from app.user.domain import User, UserCreate
 
 
 class UserRepository(Repository):

@@ -1,6 +1,6 @@
 from abc import abstractmethod
-from app.common.domain.repository import Repository
-from app.auth.domain.auth import Auth
+from app.common.domain import Repository
+from app.auth.domain import Auth
 
 
 class AuthRepository(Repository):

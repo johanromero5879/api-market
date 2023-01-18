@@ -1,4 +1,4 @@
-from app.auth.domain.auth import Auth
+from app.auth.domain import Auth
 
 default_password = "$2a$12$Gn.iYPtWr9bSXnWjNa8YveCVSZ2djZ0XXq7naDm7TUICPUxmbA/QS"  # 123456
 

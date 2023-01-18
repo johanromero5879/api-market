@@ -1,4 +1,4 @@
-from app.user.domain.user import User
+from app.user.domain import User
 
 
 class Auth(User):
