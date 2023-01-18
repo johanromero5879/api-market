@@ -1,8 +1,9 @@
 from pydantic import BaseModel
+from app.common.domain.value_id import ValueID
 
 
 class User(BaseModel):
-    id: str | None
+    id: ValueID | None
     first_name: str | None
     last_name: str | None
     email: str | None

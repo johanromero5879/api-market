@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from app.user.domain.user import User, UserCreate
 from app.user.application.user_errors import UserNotFoundError
 from app.auth.infrastructure.auth_middlewares import current_user
+from app.common.domain.value_id import ValueID
 from app.common.container import user_service
 
 router = APIRouter(
@@ -27,15 +28,16 @@ async def create(user: UserCreate):
 
 
 @router.get("/{id}", response_model=User)
-async def user(id: str):
+async def user(id: ValueID):
     try:
+        print(type(id))
         return user_service.get_by_id(id)
     except UserNotFoundError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))
 
 
 @router.patch("/{id}", response_model=User)
-async def update(id: str, user: User):
+async def update(id: ValueID, user: User):
     try:
         return user_service.update_one(id, user)
     except UserNotFoundError as error:
@@ -43,7 +45,7 @@ async def update(id: str, user: User):
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete(id: str):
+async def delete(id: ValueID):
     try:
         user_service.delete(id)
     except UserNotFoundError as error:

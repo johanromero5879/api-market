@@ -13,10 +13,10 @@ class InMemoryUserRepository(UserRepository):
 
         return users
 
-    def find_by_id(self, id: str) -> User | None:
+    def find_by_id(self, id: int) -> User | None:
         return next(filter(lambda user: user.id == id, users_list), None)
 
-    def exists_id(self, id: str) -> bool:
+    def exists_id(self, id: int) -> bool:
         return any(user.id == id for user in users_list)
 
     def find_by_email(self, email: str) -> User | None:
@@ -35,7 +35,7 @@ class InMemoryUserRepository(UserRepository):
 
         return user
 
-    def update_one(self, id: str, user: User) -> User:
+    def update_one(self, id: int, user: User) -> User:
         for index in range(len(users_list)):
             if users_list[index].id == id:
                 if bool(user.first_name):
@@ -49,7 +49,7 @@ class InMemoryUserRepository(UserRepository):
 
                 return users_list[index]
 
-    def delete(self, id: str):
+    def delete(self, id: int):
         for index in range(len(users_list)):
             if users_list[index].id == id:
                 del users_list[index]

@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from app.common.domain.repository import Repository
 from app.user.domain.user import User, UserCreate
+from app.common.domain.value_id import ValueID
 
 
 class UserRepository(Repository):
@@ -9,11 +10,11 @@ class UserRepository(Repository):
         pass
 
     @abstractmethod
-    def find_by_id(self, id: str) -> User | None:
+    def find_by_id(self, id: ValueID) -> User | None:
         pass
 
     @abstractmethod
-    def exists_id(self, id: str) -> bool:
+    def exists_id(self, id: ValueID) -> bool:
         pass
 
     @abstractmethod
@@ -29,9 +30,9 @@ class UserRepository(Repository):
         pass
 
     @abstractmethod
-    def update_one(self, id: str, user: User) -> User:
+    def update_one(self, id: ValueID, user: User) -> User:
         pass
 
     @abstractmethod
-    def delete(self, id: str):
+    def delete(self, id: ValueID):
         pass
