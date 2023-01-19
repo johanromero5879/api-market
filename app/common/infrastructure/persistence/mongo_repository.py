@@ -22,9 +22,8 @@ class MongoRepository(Generic[Entity], ABC):
     def _get_object(self, object: dict) -> Entity:
         pass
 
-    @abstractmethod
     def _get_list(self, list: dict) -> list[Entity]:
-        pass
+        return [self._get_object(item) for item in list]
 
     def is_object_id(self, id: str) -> bool:
         return ObjectId.is_valid(id)
