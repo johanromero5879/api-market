@@ -20,14 +20,12 @@ class MongoUserRepository(MongoRepository[User], UserRepository):
         user["id"] = str(user["id"])
         return User(**user)
 
+    def _get_list(self, users: dict) -> list[User]:
+        return [self._get_object(user) for user in users]
+
     def find_all(self, limit: int, skip: int) -> list[User]:
-        results = self.collection.find({}, self.__project).skip(skip).limit(limit)
-        users: list[User] = []
-
-        for user in results:
-            users.append(self._get_object(user))
-
-        return users
+        users = self.collection.find({}, self.__project).skip(skip).limit(limit)
+        return self._get_list(users)
 
     def find_by_id(self, id: str) -> User | None:
         if not self.is_object_id(id):
