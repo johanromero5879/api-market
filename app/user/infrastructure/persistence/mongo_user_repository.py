@@ -21,7 +21,7 @@ class MongoUserRepository(MongoRepository[User], UserRepository):
         return User(**user)
 
     def find_all(self, limit: int, skip: int) -> list[User]:
-        results = self.collection.find({}, self.__project)
+        results = self.collection.find({}, self.__project).skip(skip).limit(limit)
         users: list[User] = []
 
         for user in results:
