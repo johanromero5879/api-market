@@ -33,7 +33,7 @@ async def create(user: UserCreate):
 @router.get("/{id}", response_model=User)
 async def user(id: ValueID):
     try:
-        return user_service.get_by_id(id)
+        return user_service.get_by("id", id)
     except UserNotFoundError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))
 

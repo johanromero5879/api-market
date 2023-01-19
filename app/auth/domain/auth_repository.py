@@ -5,5 +5,5 @@ from app.auth.domain import Auth
 
 class AuthRepository(Repository):
     @abstractmethod
-    def find_by_email(self, email: str) -> Auth:
+    def find_by(self, field: str, value) -> Auth | None:
         pass

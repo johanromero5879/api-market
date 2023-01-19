@@ -1,4 +1,1 @@
-from .persistence.in_memory_data import users_list
-from .persistence.in_memory_user_repository import InMemoryUserRepository
 from .persistence.mongo_user_repository import MongoUserRepository
-

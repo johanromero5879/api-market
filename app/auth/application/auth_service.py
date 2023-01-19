@@ -15,7 +15,7 @@ class AuthService(Service):
         self.__bcrypt_service = BCryptService()
 
     def authenticate_user(self, email: str, password: str) -> Token:
-        user_found = self._repository.find_by_email(email)
+        user_found = self._repository.find_by("email", email)
 
         if not user_found or not self.__bcrypt_service.compare(password, user_found.password):
             raise CredentialsError()

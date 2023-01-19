@@ -8,7 +8,10 @@ class BCryptService:
         self.__crypt = CryptContext(schemes=["bcrypt"])
 
     def compare(self, text: str, hash: str) -> bool:
-        return bool(self.__crypt.verify(text, hash))
-
+        try:
+            return bool(self.__crypt.verify(text, hash))
+        except Exception:
+            return False
+        
     def create_hash(self, text: str) -> str:
         return self.__crypt.hash(text)

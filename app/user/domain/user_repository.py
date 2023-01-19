@@ -9,19 +9,11 @@ class UserRepository(Repository):
         pass
 
     @abstractmethod
-    def find_by_id(self, id: ValueID) -> User | None:
+    def find_by(self, field: str, value) -> User | None:
         pass
 
     @abstractmethod
-    def exists_id(self, id: ValueID) -> bool:
-        pass
-
-    @abstractmethod
-    def find_by_email(self, email: str) -> User | None:
-        pass
-
-    @abstractmethod
-    def exists_email(self, email: str) -> bool:
+    def exists_by(self, field: str, value) -> bool:
         pass
 
     @abstractmethod

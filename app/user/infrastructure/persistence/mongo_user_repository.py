@@ -24,35 +24,18 @@ class MongoUserRepository(MongoRepository[User], UserRepository):
         users = self.collection.find({}, self.__project).skip(skip).limit(limit)
         return self._get_list(users)
 
-    def find_by_id(self, id: str) -> User | None:
-        if not self.is_object_id(id):
-            return
+    def find_by(self, field: str, value) -> User | None:
+        field, value = self._get_format_filter(field, value)
 
-        user = self.collection.find_one(
-            {"_id": self.get_object_id(id)},
-            self.__project
-        )
+        user = self.collection.find_one({field: value}, self.__project)
 
         if bool(user):
             return self._get_object(user)
 
-    def exists_id(self, id: str) -> bool:
-        if not self.is_object_id(id):
-            return False
+    def exists_by(self, field: str, value) -> bool:
+        field, value = self._get_format_filter(field, value)
 
-        user = self.collection.find_one({"_id": self.get_object_id(id)}, {"_id": 1})
-
-        return bool(user)
-
-    def find_by_email(self, email: str) -> User | None:
-        user = self.collection.find_one({"email": email}, self.__project)
-
-        if bool(user):
-            return self._get_object(user)
-
-    def exists_email(self, email: str) -> bool:
-        user = self.collection.find_one({"email": email}, {"_id": 1})
-
+        user = self.collection.find_one({field: value}, {"_id": 1})
         return bool(user)
 
     def insert_one(self, user: UserCreate) -> User:
