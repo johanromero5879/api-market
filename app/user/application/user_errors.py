@@ -11,3 +11,15 @@ class UserNotFoundError(Exception):
             self.message = f"Email '{email}' not found"
 
         super().__init__(self.message)
+
+
+class UserFoundError(Exception):
+    def __init__(self, id: ValueID | None = None, email: str | None = None):
+        self.message = "User found"
+        if bool(id):
+            self.message = f"User with id '{id}' found"
+
+        if bool(email):
+            self.message = f"Email '{email}' found"
+
+        super().__init__(self.message)

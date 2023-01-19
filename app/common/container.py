@@ -1,11 +1,11 @@
-from app.user.application.user_service import UserService
-from app.user.infrastructure.persistence.in_memory_user_repository import InMemoryUserRepository
+from app.user.application import UserService
+from app.user.infrastructure import MongoUserRepository
 
 from app.auth.application.auth_service import AuthService
-from app.auth.infrastructure.persistence.in_memory_auth_repository import InMemoryAuthRepository
+from app.auth.infrastructure import InMemoryAuthRepository
 
 # user
-user_service = UserService(InMemoryUserRepository())
+user_service = UserService(MongoUserRepository())
 
 # auth
 auth_service = AuthService(InMemoryAuthRepository())

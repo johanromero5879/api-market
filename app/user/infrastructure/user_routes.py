@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 
 from app.user.domain import User, UserCreate
-from app.user.application import UserNotFoundError
+from app.user.application import UserNotFoundError, UserFoundError
 from app.auth.infrastructure import get_current_user
 from app.common.domain import ValueID
 from app.common.container import user_service
@@ -24,13 +24,15 @@ async def users(limit: int = 10, skip: int = 0):
 
 @router.post("/", response_model=User, status_code=status.HTTP_201_CREATED)
 async def create(user: UserCreate):
-    return user_service.create_one(user)
+    try:
+        return user_service.create_one(user)
+    except UserFoundError as error:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
 
 @router.get("/{id}", response_model=User)
 async def user(id: ValueID):
     try:
-        print(type(id))
         return user_service.get_by_id(id)
     except UserNotFoundError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))
@@ -42,6 +44,8 @@ async def update(id: ValueID, user: User):
         return user_service.update_one(id, user)
     except UserNotFoundError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))
+    except UserFoundError as error:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)

@@ -7,10 +7,11 @@ class User(BaseModel):
     first_name: str | None
     last_name: str | None
     email: str | None
-    disabled: bool = False
+    disabled: bool | None
 
 
 class UserCreate(User):
     first_name: str
     last_name: str
     email: str
+    disabled: bool = False

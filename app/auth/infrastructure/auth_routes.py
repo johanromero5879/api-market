@@ -12,6 +12,9 @@ router = APIRouter(
 
 @router.post("/login", response_model=Token)
 async def login(form: OAuth2PasswordRequestForm = Depends()):
+    """
+    :param form: form.username value is email, it is called username in the form by OAuth2 specification
+    """
     try:
         return auth_service.authenticate_user(email=form.username, password=form.password)
     except CredentialsError as error:

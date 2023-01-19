@@ -12,3 +12,5 @@ if not JWT_SECRET:
 PORT: int = int(getenv("PORT")) if bool(getenv("PORT")) else 3000
 
 
+# Databases
+MONGO_URI = getenv("MONGO_URI")

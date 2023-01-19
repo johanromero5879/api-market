@@ -1,7 +1,7 @@
 from app.common.application.service import Service
 from app.user.domain.user_repository import UserRepository
 from app.user.domain.user import UserCreate, User
-from app.user.application.user_errors import UserNotFoundError
+from app.user.application.user_errors import UserNotFoundError, UserFoundError
 from app.common.domain.value_id import ValueID
 from app.common.application.bcrypt_service import BCryptService
 
@@ -27,18 +27,25 @@ class UserService(Service):
 
     def get_by_email(self, email: str):
         user = self._repository.find_by_email(email)
-
         if not user:
             raise UserNotFoundError(email=email)
 
         return user
 
     def create_one(self, user: UserCreate) -> User:
+        if self._repository.exists_email(user.email):
+            raise UserFoundError(email=user.email)
+
         return self._repository.insert_one(user)
 
     def update_one(self, id: ValueID, user: User):
         if not self._repository.exists_id(id):
             raise UserNotFoundError(id=id)
+
+        if bool(user.email):
+            user_found = self._repository.find_by_email(user.email)
+            if bool(user_found) and user_found.id != id:
+                raise UserFoundError(email=user.email)
 
         return self._repository.update_one(id, user)
 
