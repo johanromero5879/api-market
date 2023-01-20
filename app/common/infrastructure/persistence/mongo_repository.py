@@ -6,24 +6,30 @@ from bson import ObjectId
 
 from app.config import MONGO_URI
 
-Entity = TypeVar("Entity")
+Model = TypeVar("Model")
 
 
-class MongoRepository(Generic[Entity], ABC):
+class MongoRepository(Generic[Model], ABC):
     __client: MongoClient = MongoClient(MONGO_URI)
     __db: Database = __client.get_database()
-    _collection: str
 
     @property
-    def collection(self) -> Collection:
-        return self.__db.get_collection(self._collection)
-
     @abstractmethod
-    def _get_object(self, object: dict) -> Entity:
+    def collection_name(self) -> str:
         pass
 
-    def _get_list(self, list: dict) -> list[Entity]:
-        return [self._get_object(item) for item in list]
+    def collection(self, name: str | None = None) -> Collection:
+        if bool(name):
+            return self.__db.get_collection(name)
+
+        return self.__db.get_collection(self.collection_name)
+
+    @abstractmethod
+    def _get_model_instance(self, object: dict) -> Model:
+        pass
+
+    def _get_model_list(self, list: dict) -> list[Model]:
+        return [self._get_model_instance(item) for item in list]
 
     def _get_format_filter(self, field: str, value):
         if field == "id":
