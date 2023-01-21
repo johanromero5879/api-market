@@ -18,8 +18,11 @@ async def me(user: User = Depends(get_current_user)):
 
 
 @router.get("/", response_model=list[User])
-async def users(limit: int = 10, skip: int = 0):
-    return user_service.get_all(limit, skip)
+async def users(limit: int = 10, page: int = 1):
+    try:
+        return user_service.get_all(limit, page)
+    except ValueError as error:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
 
 @router.post("/", response_model=User, status_code=status.HTTP_201_CREATED)

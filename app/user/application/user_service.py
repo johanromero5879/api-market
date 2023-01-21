@@ -14,7 +14,15 @@ class UserService(Service):
         super().__init__(repository)
         self.__bcrypt_service = BCryptService()
 
-    def get_all(self, limit: int, skip: int):
+    def get_all(self, limit: int, page: int):
+        if limit <= 0 or limit > 20:
+            raise ValueError("Limit parameter must be between 1 and 20")
+
+        if page <= 0:
+            raise ValueError("Page parameter must be greater than 1")
+
+        skip = (page - 1) * limit
+
         return self._repository.find_all(limit, skip)
 
     def get_by(self, field: str, value):
