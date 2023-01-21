@@ -26,12 +26,14 @@ class UserService(Service):
         return user
 
     def create_one(self, user: UserCreate) -> User:
+        user.id = None
         if self._repository.exists_by("email", user.email):
             raise UserFoundError(email=user.email)
 
         return self._repository.insert_one(user)
 
     def update_one(self, id: ValueID, user: User):
+        user.id = None
         if not self._repository.exists_by("id", id):
             raise UserNotFoundError(id=id)
 
