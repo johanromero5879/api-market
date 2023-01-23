@@ -1,6 +1,7 @@
 from typing import TypeVar, Generic
 from abc import ABC, abstractmethod
 from pymongo import MongoClient
+from pymongo.cursor import Cursor
 from pymongo.database import Database, Collection
 from bson import ObjectId
 
@@ -28,19 +29,19 @@ class MongoRepository(Generic[Model], ABC):
     def _get_model_instance(self, object: dict) -> Model:
         pass
 
-    def _get_model_list(self, list: dict) -> list[Model]:
-        return [self._get_model_instance(item) for item in list]
+    def _get_model_list(self, items: Cursor) -> list[Model]:
+        return [self._get_model_instance(item) for item in items]
 
     def _get_format_filter(self, field: str, value):
         if field == "id":
             field = "_id"
 
-        if field == "_id" and self.is_object_id(value):
+        if self.is_object_id(value):
             value = self.get_object_id(value)
 
         return field, value
 
-    def is_object_id(self, id: str) -> bool:
+    def is_object_id(self, id) -> bool:
         return ObjectId.is_valid(id)
 
     def get_object_id(self, id: str) -> ObjectId:

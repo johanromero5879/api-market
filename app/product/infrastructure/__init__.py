@@ -1,0 +1,2 @@
+from .persistence.mongo_product_repository import MongoProductRepository
+from .product_middlewares import verify_product_ownership
