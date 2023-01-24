@@ -7,8 +7,8 @@ class Product(BaseModel):
     id: ValueID | None
     name: str | None
     description: str | None
-    price: float | None
-    quantity: int | None
+    unit_price: float | None
+    stock: int | None
     owner: ValueID | None
 
 
@@ -19,7 +19,7 @@ class ProductSchema(Product):
 class ProductCreate(Product):
     name: str
     description: str
-    price: float
-    quantity: int
+    unit_price: float
+    stock: int
 
 

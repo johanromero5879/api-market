@@ -14,8 +14,8 @@ class MongoProductRepository(MongoRepository[Product], ProductRepository):
         "_id": 0,
         "name": 1,
         "description": 1,
-        "price": 1,
-        "quantity": 1,
+        "unit_price": 1,
+        "stock": 1,
         "owner": 1
     }
 
