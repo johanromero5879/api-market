@@ -1,12 +1,11 @@
+from pymongo import MongoClient
+
 from app.common.infrastructure import MongoRepository
 from app.user.domain import UserRepository, User, UserCreate
 from app.user.application import UserNotFoundError
 
 
 class MongoUserRepository(MongoRepository[User], UserRepository):
-    @property
-    def collection_name(self) -> str:
-        return "users"
 
     __project = {
         "_id": 0,
@@ -17,18 +16,21 @@ class MongoUserRepository(MongoRepository[User], UserRepository):
         "disabled": 1
     }
 
+    def __init__(self, client: MongoClient | None = None):
+        super().__init__("users", client)
+
     def _get_model_instance(self, user: dict) -> User:
         user["id"] = str(user["id"])
         return User(**user)
 
     def find_all(self, limit: int, skip: int) -> list[User]:
-        users = self.collection().find({}, self.__project).skip(skip).limit(limit)
+        users = self._collection.find({}, self.__project).skip(skip).limit(limit)
         return self._get_model_list(users)
 
     def find_by(self, field: str, value) -> User | None:
         field, value = self._get_format_filter(field, value)
 
-        user = self.collection().find_one({field: value}, self.__project)
+        user = self._collection.find_one({field: value}, self.__project)
 
         if bool(user):
             return self._get_model_instance(user)
@@ -36,18 +38,18 @@ class MongoUserRepository(MongoRepository[User], UserRepository):
     def exists_by(self, field: str, value) -> bool:
         field, value = self._get_format_filter(field, value)
 
-        user = self.collection().find_one({field: value}, {"_id": 1})
+        user = self._collection.find_one({field: value}, {"_id": 1})
         return bool(user)
 
     def insert_one(self, user: UserCreate) -> User:
-        user.id = str(self.collection().insert_one(user.dict(exclude_none=True)).inserted_id)
+        user.id = str(self._collection.insert_one(user.dict(exclude_none=True)).inserted_id)
         return user
 
     def update_one(self, id: str, user: User) -> User:
         if not self.is_object_id(id):
             raise UserNotFoundError(id=id)
 
-        user_updated = self.collection().find_one_and_update(
+        user_updated = self._collection.find_one_and_update(
             {"_id": self.get_object_id(id)},
             {"$set": user.dict(exclude_none=True)},
             self.__project,
@@ -60,4 +62,4 @@ class MongoUserRepository(MongoRepository[User], UserRepository):
         if not self.is_object_id(id):
             raise UserNotFoundError(id=id)
 
-        self.collection().delete_one({"_id": self.get_object_id(id)})
+        self._collection.delete_one({"_id": self.get_object_id(id)})

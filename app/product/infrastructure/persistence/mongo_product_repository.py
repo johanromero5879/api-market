@@ -1,3 +1,5 @@
+from pymongo import MongoClient
+
 from app.common.domain import ValueID
 from app.common.infrastructure import MongoRepository
 from app.product.domain import ProductRepository, Product, ProductCreate, ProductSchema
@@ -5,9 +7,6 @@ from app.product.application import ProductNotFoundError
 
 
 class MongoProductRepository(MongoRepository[Product], ProductRepository):
-    @property
-    def collection_name(self) -> str:
-        return "products"
 
     __project = {
         "id": "$_id",
@@ -40,6 +39,9 @@ class MongoProductRepository(MongoRepository[Product], ProductRepository):
         "preserveNullAndEmptyArrays": True
     }
 
+    def __init__(self, client: MongoClient | None = None):
+        super().__init__("products", client)
+
     def _get_model_instance(self, product: dict) -> Product:
         product["id"] = str(product["id"])
 
@@ -56,7 +58,7 @@ class MongoProductRepository(MongoRepository[Product], ProductRepository):
         if self.is_object_id(product.owner):
             product.owner = self.get_object_id(product.owner)
 
-        product_id = self.collection().insert_one(product.dict(exclude_none=True)).inserted_id
+        product_id = self._collection.insert_one(product.dict(exclude_none=True)).inserted_id
         product.id = str(product_id)
         product.owner = str(product.owner)
 
@@ -66,7 +68,7 @@ class MongoProductRepository(MongoRepository[Product], ProductRepository):
         if not self.is_object_id(id):
             raise ProductNotFoundError()
 
-        product_updated = self.collection().find_one_and_update(
+        product_updated = self._collection.find_one_and_update(
             {"_id": self.get_object_id(id)},
             {"$set": product.dict(exclude_none=True)},
             self.__project,
@@ -79,11 +81,11 @@ class MongoProductRepository(MongoRepository[Product], ProductRepository):
         if not self.is_object_id(id):
             raise ProductNotFoundError()
 
-        self.collection().delete_one({"_id": self.get_object_id(id)})
+        self._collection.delete_one({"_id": self.get_object_id(id)})
 
     def find_all(self, limit: int, skip: int, owner_schema: bool = True) -> list[Product]:
         if owner_schema:
-            products = self.collection().aggregate([
+            products = self._collection.aggregate([
                 {"$project": self.__project},
                 {"$lookup": self.__lookup_owner},
                 {"$unwind": self.__unwind_owner},
@@ -92,7 +94,7 @@ class MongoProductRepository(MongoRepository[Product], ProductRepository):
                 {"$limit": limit}
             ])
         else:
-            products = self.collection().find(projection=self.__project)\
+            products = self._collection.find(projection=self.__project)\
                         .sort("name", 1).skip(skip).limit(limit)
 
         return self._get_model_list(products)
@@ -101,7 +103,7 @@ class MongoProductRepository(MongoRepository[Product], ProductRepository):
         field, value = self._get_format_filter(field, value)
 
         if owner_schema:
-            product = self.collection().aggregate([
+            product = self._collection.aggregate([
                 {"$match": {field: value}},
                 {"$project": self.__project},
                 {"$lookup": self.__lookup_owner},
@@ -111,7 +113,7 @@ class MongoProductRepository(MongoRepository[Product], ProductRepository):
 
             product = product.next()
         else:
-            product = self.collection().find_one({field: value}, self.__project)
+            product = self._collection.find_one({field: value}, self.__project)
 
         if bool(product):
             return self._get_model_instance(product)
@@ -119,6 +121,6 @@ class MongoProductRepository(MongoRepository[Product], ProductRepository):
     def exists_by(self, field: str, value) -> bool:
         field, value = self._get_format_filter(field, value)
 
-        product = self.collection().find_one({field: value}, {"_id": 1})
+        product = self._collection.find_one({field: value}, {"_id": 1})
 
         return bool(product)
