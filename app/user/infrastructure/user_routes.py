@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException, status, Depends
+from dependency_injector.wiring import Provide, inject
 
 from app.user.domain import User, UserCreate
-from app.user.application import UserNotFoundError, UserFoundError
+from app.user.application import UserNotFoundError, UserFoundError, UserService
 from app.auth.infrastructure import get_current_user
 from app.common.domain import ValueID
-from app.common.container import user_service
 
 router = APIRouter(
     prefix="/users",
@@ -18,7 +18,12 @@ async def me(user: User = Depends(get_current_user)):
 
 
 @router.get("/", response_model=list[User])
-async def users(limit: int = 10, page: int = 1):
+@inject
+async def users(
+    limit: int = 10,
+    page: int = 1,
+    user_service: UserService = Depends(Provide["services.user"])
+):
     try:
         return user_service.get_all(limit, page)
     except ValueError as error:
@@ -26,7 +31,11 @@ async def users(limit: int = 10, page: int = 1):
 
 
 @router.post("/", response_model=User, status_code=status.HTTP_201_CREATED)
-async def create(user: UserCreate):
+@inject
+async def create(
+    user: UserCreate,
+    user_service: UserService = Depends(Provide["services.user"])
+):
     try:
         return user_service.create_one(user)
     except UserFoundError as error:
@@ -34,7 +43,11 @@ async def create(user: UserCreate):
 
 
 @router.get("/{id}", response_model=User)
-async def user(id: ValueID):
+@inject
+async def user(
+    id: ValueID,
+    user_service: UserService = Depends(Provide["services.user"])
+):
     try:
         return user_service.get_by("id", id)
     except UserNotFoundError as error:
@@ -42,7 +55,12 @@ async def user(id: ValueID):
 
 
 @router.patch("/{id}", response_model=User)
-async def update(id: ValueID, user: User):
+@inject
+async def update(
+    id: ValueID,
+    user: User,
+    user_service: UserService = Depends(Provide["services.user"])
+):
     try:
         return user_service.update_one(id, user)
     except UserNotFoundError as error:
@@ -52,7 +70,11 @@ async def update(id: ValueID, user: User):
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete(id: ValueID):
+@inject
+async def delete(
+    id: ValueID,
+    user_service: UserService = Depends(Provide["services.user"])
+):
     try:
         user_service.delete(id)
     except UserNotFoundError as error:

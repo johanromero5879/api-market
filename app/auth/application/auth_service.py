@@ -9,10 +9,14 @@ class AuthService(Service):
     __jwt_service: JWTService
     __bcrypt_service: BCryptService
 
-    def __init__(self, repository: AuthRepository):
+    def __init__(self,
+                 repository: AuthRepository,
+                 jwt_service: JWTService,
+                 bcrypt_service: BCryptService
+                 ):
         super().__init__(repository)
-        self.__jwt_service = JWTService()
-        self.__bcrypt_service = BCryptService()
+        self.__jwt_service = jwt_service
+        self.__bcrypt_service = bcrypt_service
 
     def authenticate_user(self, email: str, password: str) -> Token:
         user_found = self._repository.find_by("email", email)

@@ -1,12 +1,13 @@
 from fastapi import APIRouter, status, HTTPException, Depends
+from dependency_injector.wiring import Provide, inject
+
 from app.auth.infrastructure import get_current_user
-from app.product.infrastructure import verify_product_ownership
+from app.product.infrastructure.product_middlewares import verify_product_ownership
 from app.product.domain import Product, ProductCreate, ProductSchema
 from app.user.domain import User
-from app.product.application import ProductFoundError, ProductNotFoundError
+from app.product.application import ProductFoundError, ProductNotFoundError, ProductService
 
 from app.common.domain import ValueID
-from app.common.container import product_service
 
 router = APIRouter(
     prefix="/products",
@@ -15,7 +16,12 @@ router = APIRouter(
 
 
 @router.get("/", response_model=list[ProductSchema])
-async def get_products(limit: int = 10, page: int = 1):
+@inject
+async def get_products(
+    limit: int = 10,
+    page: int = 1,
+    product_service: ProductService = Depends(Provide["services.product"])
+):
     try:
         return product_service.get_all(limit, page)
     except ValueError as error:
@@ -23,7 +29,11 @@ async def get_products(limit: int = 10, page: int = 1):
 
 
 @router.get("/{id}", response_model=ProductSchema)
-async def get_product(id: ValueID):
+@inject
+async def get_product(
+    id: ValueID,
+    product_service: ProductService = Depends(Provide["services.product"])
+):
     try:
         return product_service.get_by("id", id)
     except ProductNotFoundError as error:
@@ -31,9 +41,15 @@ async def get_product(id: ValueID):
 
 
 @router.post("/", response_model=Product, status_code=status.HTTP_201_CREATED)
-async def register(product: ProductCreate, user: User = Depends(get_current_user)):
+@inject
+async def register(
+    product: ProductCreate,
+    user: User = Depends(get_current_user),
+    product_service: ProductService = Depends(Provide["services.product"])
+):
     """
     Register a new product.
+    :param product_service: service given by dependency injection
     :param product: product data
     :param user: logged user who will register the new product
     """
@@ -51,7 +67,12 @@ async def register(product: ProductCreate, user: User = Depends(get_current_user
     dependencies=[Depends(verify_product_ownership)],
     response_model=Product
 )
-async def update(id: ValueID, product: Product):
+@inject
+async def update(
+    id: ValueID,
+    product: Product,
+    product_service: ProductService = Depends(Provide["services.product"])
+):
     try:
         return product_service.update_one(id, product)
     except ProductFoundError as error:
@@ -62,7 +83,11 @@ async def update(id: ValueID, product: Product):
     path="/{id}",
     dependencies=[Depends(verify_product_ownership)],
     status_code=status.HTTP_204_NO_CONTENT)
-async def delete(id: ValueID):
+@inject
+async def delete(
+    id: ValueID,
+    product_service: ProductService = Depends(Provide["services.product"])
+):
     try:
         product_service.delete_one(id)
     except ProductNotFoundError as error:

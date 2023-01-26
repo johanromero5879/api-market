@@ -1,9 +1,10 @@
 fastapi
 uvicorn
 python-dotenv
+dependency-injector
+pymongo
 pydantic
 python-multipart
 python-jose
 passlib
 bcrypt
-pymongo

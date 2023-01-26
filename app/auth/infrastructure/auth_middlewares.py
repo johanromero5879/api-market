@@ -1,15 +1,20 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from dependency_injector.wiring import Provide, inject
 
 from app.user.domain import User
-from app.user.application import UserNotFoundError
-from app.auth.application import CredentialsError
-from app.common.container import auth_service, user_service
+from app.user.application import UserNotFoundError, UserService
+from app.auth.application import CredentialsError, AuthService
 
 oauth2 = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
-async def authenticate_user(token: str = Depends(oauth2)):
+@inject
+async def authenticate_user(
+    token: str = Depends(oauth2),
+    user_service: UserService = Depends(Provide["services.user"]),
+    auth_service: AuthService = Depends(Provide["services.auth"])
+):
     try:
         user_id = auth_service.get_user_payload(token).user_id
         user = user_service.get_by("id", user_id)
