@@ -11,10 +11,3 @@ class BaseUser(BaseModel):
 
 class User(BaseUser):
     disabled: bool | None
-
-
-class UserCreate(User):
-    first_name: str
-    last_name: str
-    email: str
-    disabled: bool = False

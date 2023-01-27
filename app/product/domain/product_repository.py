@@ -13,6 +13,10 @@ class ProductRepository(Repository):
         pass
 
     @abstractmethod
+    def decrease_stock(self, id: ValueID, quantity: float):
+        pass
+
+    @abstractmethod
     def delete_one(self, id: ValueID):
         pass
 

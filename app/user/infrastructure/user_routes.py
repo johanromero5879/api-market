@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from dependency_injector.wiring import Provide, inject
 
-from app.user.domain import User, UserCreate
+from app.user.domain import User
 from app.user.application import UserNotFoundError, UserFoundError, UserService
 from app.auth.infrastructure import get_current_user
 from app.common.domain import ValueID
@@ -27,18 +27,6 @@ async def users(
     try:
         return user_service.get_all(limit, page)
     except ValueError as error:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
-
-
-@router.post("/", response_model=User, status_code=status.HTTP_201_CREATED)
-@inject
-async def create(
-    user: UserCreate,
-    user_service: UserService = Depends(Provide["services.user"])
-):
-    try:
-        return user_service.create_one(user)
-    except UserFoundError as error:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
 

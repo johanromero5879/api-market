@@ -5,7 +5,11 @@ class ProductFoundError(Exception):
 
 
 class ProductNotFoundError(Exception):
-    def __init__(self):
-        self.message = "Product not found"
+    def __init__(self, id: str | None = None):
+        if not id:
+            self.message = "Product not found"
+        else:
+            self.message = f"Product ID '{id}' not found"
+
         super().__init__(self.message)
 

@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from app.common.domain import Repository, ValueID
-from app.user.domain import User, UserCreate
+from app.user.domain import User
 
 
 class UserRepository(Repository):
@@ -14,10 +14,6 @@ class UserRepository(Repository):
 
     @abstractmethod
     def exists_by(self, field: str, value) -> bool:
-        pass
-
-    @abstractmethod
-    def insert_one(self, user: UserCreate) -> User:
         pass
 
     @abstractmethod

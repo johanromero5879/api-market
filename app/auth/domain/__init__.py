@@ -1,3 +1,3 @@
-from .auth import Auth
+from .auth import Auth, AuthIn, UserIn
 from .token import Token, TokenData
 from .auth_repository import AuthRepository

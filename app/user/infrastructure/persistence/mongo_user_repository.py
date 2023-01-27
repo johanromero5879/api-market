@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 
 from app.common.infrastructure import MongoRepository
-from app.user.domain import UserRepository, User, UserCreate
+from app.user.domain import UserRepository, User
 from app.user.application import UserNotFoundError
 
 
@@ -40,10 +40,6 @@ class MongoUserRepository(MongoRepository[User], UserRepository):
 
         user = self._collection.find_one({field: value}, {"_id": 1})
         return bool(user)
-
-    def insert_one(self, user: UserCreate) -> User:
-        user.id = str(self._collection.insert_one(user.dict(exclude_none=True)).inserted_id)
-        return user
 
     def update_one(self, id: str, user: User) -> User:
         if not self.is_object_id(id):

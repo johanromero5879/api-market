@@ -1,0 +1,1 @@
+from .persistence.mongo_purchase_repository import MongoPurchaseRepository

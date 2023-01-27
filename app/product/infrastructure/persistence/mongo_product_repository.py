@@ -77,6 +77,17 @@ class MongoProductRepository(MongoRepository[Product], ProductRepository):
 
         return self._get_model_instance(product_updated)
 
+    def decrease_stock(self, id: ValueID, quantity: float):
+
+        if not self.is_object_id(id):
+            raise ProductNotFoundError()
+
+        self._collection.update_one(
+            {"_id": self.get_object_id(id)},
+            {"$inc": {"stock": -quantity}},
+            session=self._session
+        )
+
     def delete_one(self, id: ValueID):
         if not self.is_object_id(id):
             raise ProductNotFoundError()

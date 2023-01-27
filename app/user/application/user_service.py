@@ -1,18 +1,15 @@
 from app.common.application.service import Service
 from app.user.domain.user_repository import UserRepository
-from app.user.domain.user import UserCreate, User
+from app.user.domain.user import User
 from app.user.application.user_errors import UserNotFoundError, UserFoundError
 from app.common.domain.value_id import ValueID
-from app.common.application.bcrypt_service import BCryptService
 
 
 class UserService(Service):
     _repository: UserRepository
-    __bcrypt_service: BCryptService
 
     def __init__(self, repository: UserRepository):
         super().__init__(repository)
-        self.__bcrypt_service = BCryptService()
 
     def get_all(self, limit: int, page: int):
         if limit <= 0 or limit > 20:
@@ -32,13 +29,6 @@ class UserService(Service):
             raise UserNotFoundError()
 
         return user
-
-    def create_one(self, user: UserCreate) -> User:
-        user.id = None
-        if self._repository.exists_by("email", user.email):
-            raise UserFoundError(email=user.email)
-
-        return self._repository.insert_one(user)
 
     def update_one(self, id: ValueID, user: User):
         user.id = None
