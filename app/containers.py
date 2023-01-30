@@ -61,7 +61,8 @@ class Services(containers.DeclarativeContainer):
     purchase = providers.Singleton(
         PurchaseService,
         repository=repositories.purchase,
-        product_repository=repositories.product
+        product_repository=repositories.product,
+        user_repository=repositories.user
     )
 
 
@@ -69,6 +70,7 @@ class Container(containers.DeclarativeContainer):
 
     config = providers.Configuration(strict=True)
 
+    # Make injection on API Routes and middlewares functions
     wiring_config = containers.WiringConfiguration(
         packages=[
             "app.user.infrastructure",

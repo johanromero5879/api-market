@@ -11,3 +11,8 @@ class BaseUser(BaseModel):
 
 class User(BaseUser):
     disabled: bool | None
+
+
+class UserBudget(BaseModel):
+    id: ValueID
+    budget: float

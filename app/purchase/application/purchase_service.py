@@ -1,10 +1,12 @@
 from datetime import datetime
 
+from app.common.domain import ValueID
 from app.common.application import Service
 from app.product.domain import ProductRepository
 from app.product.application import ProductNotFoundError
 from app.purchase.domain import PurchaseRepository, PurchaseIn, Purchase, ItemDetail
-from app.purchase.application import EmptyDetailError, NotEnoughStockError, NoCustomerError
+from app.purchase.application import EmptyDetailError, NotEnoughStockError, NoCustomerError, NotEnoughBudgetError
+from app.user.domain import UserRepository
 
 
 class PurchaseService(Service):
@@ -13,10 +15,12 @@ class PurchaseService(Service):
 
     def __init__(self,
                  repository: PurchaseRepository,
-                 product_repository: ProductRepository
+                 product_repository: ProductRepository,
+                 user_repository: UserRepository
                  ):
         super().__init__(repository)
         self.__product_repository = product_repository
+        self.__user_repository = user_repository
 
     def purchase(self, purchase: PurchaseIn) -> Purchase:
         purchase.id = None
@@ -26,25 +30,34 @@ class PurchaseService(Service):
             raise NoCustomerError()
 
         try:
-            # Start transaction in product and purchase repositories
-            self._repository.start_transaction()
+            # Start transaction in product, purchase and user repositories
             self.__product_repository.start_transaction()
+            self._repository.start_transaction()
+            self.__user_repository.start_transaction()
 
+            # Extract a detail list of items and total of products
             purchase.total, purchase.detail = self.__process_detail(purchase.detail)
+
+            # Process payment from user budget
+            self.__process_payment(purchase.customer, purchase.total)
+
             purchase.created_at = datetime.now()
 
+            # Make a record of the purchase
             purchase = self._repository.insert_one(purchase)
 
             # IMPORTANT: commit transactions in all repositories implied
             # Commit transaction to send changes to database
-            self._repository.commit_transaction()
             self.__product_repository.commit_transaction()
+            self._repository.commit_transaction()
+            self.__user_repository.commit_transaction()
 
             return purchase
         except Exception as error:
             # If anything fails, database operations will be rollback and there will be no changes on it
-            self._repository.rollback_transaction()
             self.__product_repository.rollback_transaction()
+            self._repository.rollback_transaction()
+            self.__user_repository.rollback_transaction()
 
             raise error
 
@@ -81,3 +94,13 @@ class PurchaseService(Service):
             self.__product_repository.decrease_stock(product.id, item.quantity)
 
         return total, detail
+
+    def __process_payment(self, user_id: ValueID, cost: float):
+        user = self.__user_repository.find_budget(user_id)
+
+        if not user or user.budget < cost:
+            raise NotEnoughBudgetError()
+
+        # Reduce cost purchase from user budget
+        self.__user_repository.reduce_budget(user.id, cost)
+

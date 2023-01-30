@@ -14,3 +14,9 @@ class NoCustomerError(Exception):
     def __init__(self):
         self.message = "The purchase must have a customer id"
         super().__init__(self.message)
+
+
+class NotEnoughBudgetError(Exception):
+    def __init__(self):
+        self.message = f"Not enough budget for the purchase"
+        super().__init__(self.message)

@@ -64,12 +64,12 @@ class MongoRepository(Generic[Model], ABC):
         self._session.start_transaction()
 
     def commit_transaction(self):
-        if bool(self._session):
+        if self._session:
             self._session.commit_transaction()
             self._session = None
 
     def rollback_transaction(self):
-        if bool(self._session):
+        if self._session:
             self._session.abort_transaction()
             self._session = None
 

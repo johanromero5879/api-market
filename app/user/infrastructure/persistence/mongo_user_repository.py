@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 
 from app.common.infrastructure import MongoRepository
-from app.user.domain import UserRepository, User
+from app.user.domain import UserRepository, User, UserBudget
 from app.user.application import UserNotFoundError
 
 
@@ -59,3 +59,16 @@ class MongoUserRepository(MongoRepository[User], UserRepository):
             raise UserNotFoundError(id=id)
 
         self._collection.delete_one({"_id": self.get_object_id(id)})
+
+    def find_budget(self, id: str) -> UserBudget | None:
+        user = self._collection.find_one({"_id": self.get_object_id(id)}, {"_id": 0, "id": "$_id", "budget": 1})
+
+        if user:
+            user["id"] = str(user["id"])
+            return UserBudget(**user)
+
+    def reduce_budget(self, id: str, cost: float):
+        self._collection.update_one(
+            filter={"_id": self.get_object_id(id)},
+            update={"$inc": {"budget": -cost}}
+        )
