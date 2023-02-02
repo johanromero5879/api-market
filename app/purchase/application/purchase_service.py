@@ -1,10 +1,11 @@
 from datetime import datetime
+from dependency_injector.wiring import Provide, inject
 
 from app.common.domain import ValueID
-from app.common.application import Service
+from app.common.application import Service, Transaction
 from app.product.domain import ProductRepository
 from app.product.application import ProductNotFoundError
-from app.purchase.domain import PurchaseRepository, PurchaseIn, Purchase, ItemDetail
+from app.purchase.domain import PurchaseRepository, BasePurchase, BaseItemDetail, ItemDetail, PurchaseIn
 from app.purchase.application import EmptyDetailError, NotEnoughStockError, NoCustomerError, NotEnoughBudgetError
 from app.user.domain import UserRepository
 
@@ -22,46 +23,43 @@ class PurchaseService(Service):
         self.__product_repository = product_repository
         self.__user_repository = user_repository
 
-    def purchase(self, purchase: PurchaseIn) -> Purchase:
-        purchase.id = None
-
+    @inject
+    def purchase(self, purchase: BasePurchase, transaction: Transaction = Provide["services.transaction"]):
         # Check if a customer id is associated to the purchase
         if not purchase.customer:
             raise NoCustomerError()
 
         try:
-            # Start transaction in product, purchase and user repositories
-            self.__product_repository.start_transaction()
-            self._repository.start_transaction()
-            self.__user_repository.start_transaction()
+            # Start injected transaction
+            transaction.start()
 
             # Extract a detail list of items and total of products
-            purchase.total, purchase.detail = self.__process_detail(purchase.detail)
+            total, purchase.detail = self.__process_detail(purchase.detail, transaction.get_session())
 
             # Process payment from user budget
-            self.__process_payment(purchase.customer, purchase.total)
+            self.__process_payment(purchase.customer, total, transaction.get_session())
 
-            purchase.created_at = datetime.now()
+            purchase = PurchaseIn(
+                customer=purchase.customer,
+                detail=purchase.detail,
+                total=total,
+                created_at=datetime.now()
+            )
 
             # Make a record of the purchase
-            purchase = self._repository.insert_one(purchase)
+            purchase = self._repository.insert_one(purchase, transaction.get_session())
 
-            # IMPORTANT: commit transactions in all repositories implied
             # Commit transaction to send changes to database
-            self.__product_repository.commit_transaction()
-            self._repository.commit_transaction()
-            self.__user_repository.commit_transaction()
+            transaction.commit()
 
             return purchase
         except Exception as error:
             # If anything fails, database operations will be rollback and there will be no changes on it
-            self.__product_repository.rollback_transaction()
-            self._repository.rollback_transaction()
-            self.__user_repository.rollback_transaction()
+            transaction.rollback()
 
             raise error
 
-    def __process_detail(self, detail: list[ItemDetail]) -> (float, list[ItemDetail]):
+    def __process_detail(self, detail: list[BaseItemDetail], session) -> (float, list[ItemDetail]):
         """
         :param detail: list of items
         :return: tuple when first parameter is total of all items, second one the detail list with additional info
@@ -77,30 +75,30 @@ class PurchaseService(Service):
             if not product:
                 raise ProductNotFoundError(id=item.id)
 
-            if item.quantity > product.stock:
+            if product.stock == 0 or item.quantity > product.stock:
                 raise NotEnoughStockError(item_name=product.name)
 
-            # Retrieve product info at the moment of purchasing into the item detail
-            item.name = product.name
-            item.unit_price = product.unit_price
+            item = ItemDetail(
+                **item.dict(),
+                name=product.name,
+                unit_price=product.unit_price,
+                total=product.unit_price * item.quantity  # Works out total price
+            )
 
-            # Works out total price
-            item.total = item.unit_price * item.quantity
             total += item.total
-
             detail[index] = item
 
             # Decrease stock from product
-            self.__product_repository.decrease_stock(product.id, item.quantity)
+            self.__product_repository.decrease_stock(product.id, item.quantity, session)
 
         return total, detail
 
-    def __process_payment(self, user_id: ValueID, cost: float):
+    def __process_payment(self, user_id: ValueID, cost: float, session):
         user = self.__user_repository.find_budget(user_id)
 
         if not user or user.budget < cost:
             raise NotEnoughBudgetError()
 
         # Reduce cost purchase from user budget
-        self.__user_repository.reduce_budget(user.id, cost)
+        self.__user_repository.reduce_budget(user.id, cost, session)
 

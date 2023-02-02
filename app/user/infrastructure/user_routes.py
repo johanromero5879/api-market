@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from dependency_injector.wiring import Provide, inject
 
-from app.user.domain import User
+from app.user.domain import UserOut, UserPatch
 from app.user.application import UserNotFoundError, UserFoundError, UserService
 from app.auth.infrastructure import get_current_user
 from app.common.domain import ValueID
@@ -12,12 +12,12 @@ router = APIRouter(
 )
 
 
-@router.get("/me", response_model=User)
-async def me(user: User = Depends(get_current_user)):
+@router.get("/me", response_model=UserOut)
+async def me(user: UserOut = Depends(get_current_user)):
     return user
 
 
-@router.get("/", response_model=list[User])
+@router.get("/", response_model=list[UserOut])
 @inject
 async def users(
     limit: int = 10,
@@ -30,7 +30,7 @@ async def users(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
 
-@router.get("/{id}", response_model=User)
+@router.get("/{id}", response_model=UserOut)
 @inject
 async def user(
     id: ValueID,
@@ -42,11 +42,11 @@ async def user(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))
 
 
-@router.patch("/{id}", response_model=User)
+@router.patch("/{id}", response_model=UserOut)
 @inject
 async def update(
     id: ValueID,
-    user: User,
+    user: UserPatch,
     user_service: UserService = Depends(Provide["services.user"])
 ):
     try:

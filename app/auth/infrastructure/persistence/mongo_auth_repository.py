@@ -1,10 +1,10 @@
 from pymongo import MongoClient
 
 from app.common.infrastructure import MongoRepository
-from app.auth.domain import AuthRepository, Auth, AuthIn
+from app.auth.domain import AuthRepository, AuthOut, AuthIn
 
 
-class MongoAuthRepository(MongoRepository[Auth], AuthRepository):
+class MongoAuthRepository(MongoRepository[AuthOut], AuthRepository):
 
     __project = {
         "_id": 0,
@@ -16,18 +16,18 @@ class MongoAuthRepository(MongoRepository[Auth], AuthRepository):
     def __init__(self, client: MongoClient | None = None):
         super().__init__("users", client)
 
-    def _get_model_instance(self, user: dict) -> Auth:
+    def _get_model_instance(self, user: dict) -> AuthOut:
         user["id"] = str(user["id"])
         if "password" not in user:
             user["password"] = ""
 
-        return Auth(**user)
+        return AuthOut(**user)
 
-    def find_by(self, field: str, value) -> Auth | None:
+    def find_by(self, field: str, value) -> AuthOut | None:
         field, value = self._get_format_filter(field, value)
         user = self._collection.find_one({field: value}, self.__project)
 
-        if bool(user):
+        if user:
             return self._get_model_instance(user)
 
     def exists_by(self, field: str, value) -> bool:

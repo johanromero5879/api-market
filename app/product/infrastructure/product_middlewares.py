@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException, status
 from dependency_injector.wiring import Provide, inject
 
 from app.common.domain import ValueID
-from app.user.domain import User
+from app.user.domain import UserOut
 from app.auth.infrastructure import get_current_user
 from app.product.application import ProductNotFoundError, ProductService
 
@@ -10,7 +10,7 @@ from app.product.application import ProductNotFoundError, ProductService
 @inject
 async def verify_product_ownership(
     id: ValueID,
-    user: User = Depends(get_current_user),
+    user: UserOut = Depends(get_current_user),
     product_service: ProductService = Depends(Provide["services.product"])
 ):
     try:

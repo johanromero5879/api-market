@@ -1,11 +1,12 @@
 from pymongo import MongoClient
+from pymongo.client_session import ClientSession
 
 from app.common.infrastructure import MongoRepository
-from app.user.domain import UserRepository, User, UserBudget
+from app.user.domain import UserRepository, UserBudget, UserOut, UserPatch
 from app.user.application import UserNotFoundError
 
 
-class MongoUserRepository(MongoRepository[User], UserRepository):
+class MongoUserRepository(MongoRepository[UserOut], UserRepository):
 
     __project = {
         "_id": 0,
@@ -19,15 +20,15 @@ class MongoUserRepository(MongoRepository[User], UserRepository):
     def __init__(self, client: MongoClient | None = None):
         super().__init__("users", client)
 
-    def _get_model_instance(self, user: dict) -> User:
+    def _get_model_instance(self, user: dict) -> UserOut:
         user["id"] = str(user["id"])
-        return User(**user)
+        return UserOut(**user)
 
-    def find_all(self, limit: int, skip: int) -> list[User]:
+    def find_all(self, limit: int, skip: int) -> list[UserOut]:
         users = self._collection.find({}, self.__project).skip(skip).limit(limit)
         return self._get_model_list(users)
 
-    def find_by(self, field: str, value) -> User | None:
+    def find_by(self, field: str, value) -> UserOut | None:
         field, value = self._get_format_filter(field, value)
 
         user = self._collection.find_one({field: value}, self.__project)
@@ -41,7 +42,7 @@ class MongoUserRepository(MongoRepository[User], UserRepository):
         user = self._collection.find_one({field: value}, {"_id": 1})
         return bool(user)
 
-    def update_one(self, id: str, user: User) -> User:
+    def update_one(self, id: str, user: UserPatch) -> UserOut:
         if not self.is_object_id(id):
             raise UserNotFoundError(id=id)
 
@@ -67,8 +68,9 @@ class MongoUserRepository(MongoRepository[User], UserRepository):
             user["id"] = str(user["id"])
             return UserBudget(**user)
 
-    def reduce_budget(self, id: str, cost: float):
+    def reduce_budget(self, id: str, cost: float, session: ClientSession):
         self._collection.update_one(
             filter={"_id": self.get_object_id(id)},
-            update={"$inc": {"budget": -cost}}
+            update={"$inc": {"budget": -cost}},
+            session=session
         )

@@ -1,15 +1,15 @@
 from abc import abstractmethod
 from app.common.domain import Repository, ValueID
-from app.user.domain import User, UserBudget
+from app.user.domain import UserOut, UserBudget, UserPatch
 
 
 class UserRepository(Repository):
     @abstractmethod
-    def find_all(self, limit: int, skip: int) -> list[User]:
+    def find_all(self, limit: int, skip: int) -> list[UserOut]:
         pass
 
     @abstractmethod
-    def find_by(self, field: str, value) -> User | None:
+    def find_by(self, field: str, value) -> UserOut | None:
         pass
 
     @abstractmethod
@@ -17,7 +17,7 @@ class UserRepository(Repository):
         pass
 
     @abstractmethod
-    def reduce_budget(self, id: ValueID, cost: float):
+    def reduce_budget(self, id: ValueID, cost: float, session):
         pass
 
     @abstractmethod
@@ -25,7 +25,7 @@ class UserRepository(Repository):
         pass
 
     @abstractmethod
-    def update_one(self, id: ValueID, user: User) -> User:
+    def update_one(self, id: ValueID, user: UserPatch) -> UserOut:
         pass
 
     @abstractmethod

@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from dependency_injector.wiring import Provide, inject
 
-from app.user.domain import User
+from app.user.domain import UserOut
 from app.user.application import UserNotFoundError, UserService
 from app.auth.application import CredentialsError, AuthService
 
@@ -27,7 +27,7 @@ async def authenticate_user(
         )
 
 
-async def get_current_user(user: User = Depends(authenticate_user)):
+async def get_current_user(user: UserOut = Depends(authenticate_user)):
     if user.disabled:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
 

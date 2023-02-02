@@ -1,28 +1,34 @@
 from datetime import datetime
+
 from pydantic import BaseModel
+
 from app.common.domain import ValueID
 from app.user.domain import BaseUser
 
 
-class ItemDetail(BaseModel):
+class BaseItemDetail(BaseModel):
     id: ValueID
     quantity: int
-    name: str | None
-    unit_price: float | None
-    total: float | None
 
 
-class Purchase(BaseModel):
-    id: ValueID | None
+class ItemDetail(BaseItemDetail):
+    name: str
+    unit_price: float
+    total: float
+
+
+class BasePurchase(BaseModel):
     customer: ValueID | None
-    detail: list[ItemDetail] | None
-    total: float | None
-    created_at: datetime | None
+    detail: list[BaseItemDetail]
 
 
-class PurchaseIn(Purchase):
+class PurchaseIn(BasePurchase):
+    customer: ValueID
     detail: list[ItemDetail]
+    total: float
+    created_at: datetime
 
 
-class PurchaseOut(Purchase):
-    customer: ValueID | BaseUser | None
+class PurchaseOut(PurchaseIn):
+    id: ValueID
+    customer: ValueID | BaseUser

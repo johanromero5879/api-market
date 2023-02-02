@@ -1,12 +1,13 @@
 from pymongo import MongoClient
+from pymongo.client_session import ClientSession
 
 from app.common.domain import ValueID
 from app.common.infrastructure import MongoRepository
-from app.product.domain import ProductRepository, Product, ProductCreate, ProductSchema
+from app.product.domain import ProductRepository, ProductOut, ProductIn, ProductPatch
 from app.product.application import ProductNotFoundError
 
 
-class MongoProductRepository(MongoRepository[Product], ProductRepository):
+class MongoProductRepository(MongoRepository[ProductOut], ProductRepository):
 
     __project = {
         "id": "$_id",
@@ -42,7 +43,7 @@ class MongoProductRepository(MongoRepository[Product], ProductRepository):
     def __init__(self, client: MongoClient | None = None):
         super().__init__("products", client)
 
-    def _get_model_instance(self, product: dict) -> Product:
+    def _get_model_instance(self, product: dict) -> ProductOut:
         product["id"] = str(product["id"])
 
         if "owner" in product:
@@ -50,21 +51,21 @@ class MongoProductRepository(MongoRepository[Product], ProductRepository):
                 product["owner"] = str(product["owner"])
             else:
                 product["owner"]["id"] = str(product["owner"]["id"])
-                return ProductSchema(**product)
 
-        return Product(**product)
+        return ProductOut(**product)
 
-    def insert_one(self, product: ProductCreate) -> Product:
-        if self.is_object_id(product.owner):
-            product.owner = self.get_object_id(product.owner)
+    def insert_one(self, product: ProductIn) -> ProductOut:
+        product.owner = self.get_object_id(product.owner)
 
         product_id = self._collection.insert_one(product.dict(exclude_none=True)).inserted_id
+
+        product = ProductOut(**product.dict())
         product.id = str(product_id)
         product.owner = str(product.owner)
 
         return product
 
-    def update_one(self, id: ValueID, product: Product) -> Product:
+    def update_one(self, id: str, product: ProductPatch) -> ProductOut:
         if not self.is_object_id(id):
             raise ProductNotFoundError()
 
@@ -77,7 +78,7 @@ class MongoProductRepository(MongoRepository[Product], ProductRepository):
 
         return self._get_model_instance(product_updated)
 
-    def decrease_stock(self, id: ValueID, quantity: float):
+    def decrease_stock(self, id: str, quantity: float, session: ClientSession):
 
         if not self.is_object_id(id):
             raise ProductNotFoundError()
@@ -85,16 +86,16 @@ class MongoProductRepository(MongoRepository[Product], ProductRepository):
         self._collection.update_one(
             {"_id": self.get_object_id(id)},
             {"$inc": {"stock": -quantity}},
-            session=self._session
+            session=session
         )
 
-    def delete_one(self, id: ValueID):
+    def delete_one(self, id: str):
         if not self.is_object_id(id):
             raise ProductNotFoundError()
 
         self._collection.delete_one({"_id": self.get_object_id(id)})
 
-    def find_all(self, limit: int, skip: int, owner_schema: bool = True) -> list[Product]:
+    def find_all(self, limit: int, skip: int, owner_schema: bool = True) -> list[ProductOut]:
         if owner_schema:
             products = self._collection.aggregate([
                 {"$project": self.__project},
@@ -110,7 +111,7 @@ class MongoProductRepository(MongoRepository[Product], ProductRepository):
 
         return self._get_model_list(products)
 
-    def find_by(self, field: str, value, owner_schema: bool = True) -> Product | None:
+    def find_by(self, field: str, value, owner_schema: bool = True) -> ProductOut | None:
         field, value = self._get_format_filter(field, value)
 
         if owner_schema:
@@ -126,7 +127,7 @@ class MongoProductRepository(MongoRepository[Product], ProductRepository):
         else:
             product = self._collection.find_one({field: value}, self.__project)
 
-        if bool(product):
+        if product:
             return self._get_model_instance(product)
 
     def exists_by(self, field: str, value) -> bool:

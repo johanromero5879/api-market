@@ -1,17 +1,18 @@
 from abc import abstractmethod
+
 from app.common.domain import Repository
-from app.purchase.domain import PurchaseIn, Purchase
+from app.purchase.domain import PurchaseIn, PurchaseOut
 
 
 class PurchaseRepository(Repository):
     @abstractmethod
-    def insert_one(self, purchase: PurchaseIn) -> Purchase:
+    def insert_one(self, purchase: PurchaseIn, session) -> PurchaseOut:
         pass
 
     @abstractmethod
-    def find_by(self, field, value) -> Purchase:
+    def find_by(self, field, value) -> PurchaseOut:
         pass
 
     @abstractmethod
-    def find(self, field, value) -> list[Purchase]:
+    def find(self, field, value) -> list[PurchaseOut]:
         pass

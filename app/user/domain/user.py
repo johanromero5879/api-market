@@ -1,16 +1,28 @@
 from pydantic import BaseModel
+
 from app.common.domain import ValueID
 
 
 class BaseUser(BaseModel):
-    id: ValueID | None
+    first_name: str
+    last_name: str
+    email: str
+
+
+class UserPatch(BaseUser):
     first_name: str | None
     last_name: str | None
     email: str | None
 
 
-class User(BaseUser):
-    disabled: bool | None
+class UserIn(BaseUser):
+    budget: float = 0
+    disabled: bool = False
+
+
+class UserOut(BaseUser):
+    id: ValueID
+    disabled: bool
 
 
 class UserBudget(BaseModel):

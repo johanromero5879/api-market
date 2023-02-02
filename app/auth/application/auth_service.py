@@ -1,6 +1,7 @@
 from app.common.domain import ValueID
+from app.user.domain import UserIn
 from app.user.application import UserFoundError
-from app.auth.domain import AuthRepository, Token, TokenData, AuthIn, UserIn
+from app.auth.domain import AuthRepository, Token, TokenData, AuthIn
 from app.auth.application import CredentialsError
 from app.common.application import JWTService, BCryptService, Service
 
@@ -28,7 +29,6 @@ class AuthService(Service):
         return self.__create_user_token(user_found.id)
 
     def register_user(self, user: AuthIn) -> Token:
-        user.id = None
         # Transform to UserIn instances to set default attributes before create them
         user = UserIn(**user.dict())
 

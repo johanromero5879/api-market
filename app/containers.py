@@ -2,6 +2,7 @@ from dependency_injector import containers, providers
 from pymongo import MongoClient
 
 from app.common.application import JWTService, BCryptService
+from app.common.infrastructure import MongoTransaction
 
 from app.purchase.application import PurchaseService
 from app.purchase.infrastructure import MongoPurchaseRepository
@@ -36,10 +37,12 @@ class Repositories(containers.DeclarativeContainer):
 class Services(containers.DeclarativeContainer):
 
     config = providers.Configuration(strict=True)
+    gateways = providers.DependenciesContainer()
     repositories = providers.DependenciesContainer()
 
     jwt = providers.Singleton(JWTService, jwt_secret=config.jwt.secret)
     bcrypt = providers.Singleton(BCryptService)
+    transaction = providers.Factory(MongoTransaction, client=gateways.database_client)
 
     user = providers.Singleton(
         UserService,
@@ -76,10 +79,17 @@ class Container(containers.DeclarativeContainer):
             "app.user.infrastructure",
             "app.auth.infrastructure",
             "app.product.infrastructure",
-            "app.purchase.infrastructure"
+            "app.purchase.infrastructure",
+            "app.purchase.application",  # By purchase operations, they will need a transaction object
         ]
     )
 
     gateways = providers.Container(Gateways, config=config.gateways)
     repositories = providers.Container(Repositories, gateways=gateways)
-    services = providers.Container(Services, repositories=repositories, config=config.services)
+
+    services = providers.Container(
+        Services,
+        config=config.services,
+        repositories=repositories,
+        gateways=gateways
+    )

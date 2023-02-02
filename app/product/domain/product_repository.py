@@ -1,19 +1,19 @@
 from abc import abstractmethod
 from app.common.domain import Repository, ValueID
-from app.product.domain import Product, ProductCreate
+from app.product.domain import ProductIn, ProductOut, ProductPatch
 
 
 class ProductRepository(Repository):
     @abstractmethod
-    def insert_one(self, product: ProductCreate) -> Product:
+    def insert_one(self, product: ProductIn) -> ProductOut:
         pass
 
     @abstractmethod
-    def update_one(self, id: ValueID, product: Product) -> Product:
+    def update_one(self, id: ValueID, product: ProductPatch) -> ProductOut:
         pass
 
     @abstractmethod
-    def decrease_stock(self, id: ValueID, quantity: float):
+    def decrease_stock(self, id: ValueID, quantity: float, session):
         pass
 
     @abstractmethod
@@ -21,11 +21,11 @@ class ProductRepository(Repository):
         pass
 
     @abstractmethod
-    def find_all(self, limit: int, skip: int, owner_schema: bool = True) -> list[Product]:
+    def find_all(self, limit: int, skip: int, owner_schema: bool = True) -> list[ProductOut]:
         pass
 
     @abstractmethod
-    def find_by(self, field: str, value, owner_schema: bool = True) -> Product:
+    def find_by(self, field: str, value, owner_schema: bool = True) -> ProductOut:
         pass
 
     @abstractmethod

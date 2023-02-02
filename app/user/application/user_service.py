@@ -1,6 +1,6 @@
 from app.common.application.service import Service
 from app.user.domain.user_repository import UserRepository
-from app.user.domain.user import User
+from app.user.domain.user import UserPatch
 from app.user.application.user_errors import UserNotFoundError, UserFoundError
 from app.common.domain.value_id import ValueID
 
@@ -30,14 +30,13 @@ class UserService(Service):
 
         return user
 
-    def update_one(self, id: ValueID, user: User):
-        user.id = None
+    def update_one(self, id: ValueID, user: UserPatch):
         if not self._repository.exists_by("id", id):
             raise UserNotFoundError(id=id)
 
         if bool(user.email):
             user_found = self._repository.find_by("email", user.email)
-            if bool(user_found) and user_found.id != id:
+            if user_found and user_found.id != id:
                 raise UserFoundError(email=user.email)
 
         return self._repository.update_one(id, user)

@@ -3,8 +3,8 @@ from dependency_injector.wiring import Provide, inject
 
 from app.auth.infrastructure import get_current_user
 from app.product.infrastructure.product_middlewares import verify_product_ownership
-from app.product.domain import Product, ProductCreate, ProductSchema
-from app.user.domain import User
+from app.product.domain import ProductPatch, ProductOut, ProductIn
+from app.user.domain import UserOut
 from app.product.application import ProductFoundError, ProductNotFoundError, ProductService
 
 from app.common.domain import ValueID
@@ -15,7 +15,7 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=list[ProductSchema])
+@router.get("/", response_model=list[ProductOut])
 @inject
 async def get_products(
     limit: int = 10,
@@ -28,7 +28,7 @@ async def get_products(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
 
-@router.get("/{id}", response_model=ProductSchema)
+@router.get("/{id}", response_model=ProductOut)
 @inject
 async def get_product(
     id: ValueID,
@@ -40,11 +40,11 @@ async def get_product(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))
 
 
-@router.post("/", response_model=Product, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=ProductOut, status_code=status.HTTP_201_CREATED)
 @inject
 async def register(
-    product: ProductCreate,
-    user: User = Depends(get_current_user),
+    product: ProductIn,
+    user: UserOut = Depends(get_current_user),
     product_service: ProductService = Depends(Provide["services.product"])
 ):
     """
@@ -65,12 +65,12 @@ async def register(
 @router.patch(
     path="/{id}",
     dependencies=[Depends(verify_product_ownership)],
-    response_model=Product
+    response_model=ProductOut
 )
 @inject
 async def update(
     id: ValueID,
-    product: Product,
+    product: ProductPatch,
     product_service: ProductService = Depends(Provide["services.product"])
 ):
     try:
