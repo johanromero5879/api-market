@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from app.common.domain import Repository, ValueID
+from app.common.domain import Repository, ValueId
 from app.user.domain import UserOut, UserBudget, UserPatch
 
 
@@ -13,11 +13,11 @@ class UserRepository(Repository):
         pass
 
     @abstractmethod
-    def find_budget(self, id: ValueID) -> UserBudget | None:
+    def find_budget(self, id: ValueId) -> UserBudget | None:
         pass
 
     @abstractmethod
-    def reduce_budget(self, id: ValueID, cost: float, session):
+    def reduce_budget(self, id: ValueId, cost: float, session):
         pass
 
     @abstractmethod
@@ -25,9 +25,9 @@ class UserRepository(Repository):
         pass
 
     @abstractmethod
-    def update_one(self, id: ValueID, user: UserPatch) -> UserOut:
+    def update_one(self, id: ValueId, user: UserPatch) -> UserOut:
         pass
 
     @abstractmethod
-    def delete(self, id: ValueID):
+    def delete(self, id: ValueId):
         pass

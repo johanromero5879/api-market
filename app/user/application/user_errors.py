@@ -1,8 +1,8 @@
-from app.common.domain.value_id import ValueID
+from app.common.domain.value_id import ValueId
 
 
 class UserNotFoundError(Exception):
-    def __init__(self, id: ValueID | None = None, email: str | None = None):
+    def __init__(self, id: ValueId | None = None, email: str | None = None):
         self.message = "User not found"
         if bool(id):
             self.message = f"User with id '{id}' not found"
@@ -14,7 +14,7 @@ class UserNotFoundError(Exception):
 
 
 class UserFoundError(Exception):
-    def __init__(self, id: ValueID | None = None, email: str | None = None):
+    def __init__(self, id: ValueId | None = None, email: str | None = None):
         self.message = "User found"
         if bool(id):
             self.message = f"User with id '{id}' found"

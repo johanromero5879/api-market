@@ -1,4 +1,4 @@
-from app.common.domain import ValueID
+from app.common.domain import ValueId
 from app.common.application import Service
 from app.product.domain import ProductIn, ProductRepository, ProductPatch
 from app.product.application import ProductFoundError, ProductNotFoundError
@@ -34,7 +34,7 @@ class ProductService(Service):
 
         return self._repository.insert_one(product)
 
-    def update_one(self, id: ValueID, product: ProductPatch):
+    def update_one(self, id: ValueId, product: ProductPatch):
         if product.name:
             product_found = self._repository.find_by("name", product.name, owner_schema=False)
             if product_found and id != product_found.id:
@@ -42,7 +42,7 @@ class ProductService(Service):
 
         return self._repository.update_one(id, product)
 
-    def delete_one(self, id: ValueID):
+    def delete_one(self, id: ValueId):
         if not self._repository.exists_by("id", id):
             raise ProductNotFoundError()
 

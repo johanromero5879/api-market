@@ -1,34 +1,34 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import Field
 
-from app.common.domain import ValueID
+from app.common.domain import ValueId, Model
 from app.user.domain import BaseUser
 
 
-class BaseItemDetail(BaseModel):
-    id: ValueID
+class BaseDetail(Model):
+    product_id: ValueId
     quantity: int
 
 
-class ItemDetail(BaseItemDetail):
+class Detail(BaseDetail):
     name: str
     unit_price: float
     total: float
 
 
-class BasePurchase(BaseModel):
-    customer: ValueID | None
-    detail: list[BaseItemDetail]
+class BasePurchase(Model):
+    customer: ValueId | None
+    detail: list[BaseDetail]
 
 
 class PurchaseIn(BasePurchase):
-    customer: ValueID
-    detail: list[ItemDetail]
+    customer: ValueId
+    detail: list[Detail]
     total: float
-    created_at: datetime
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
 class PurchaseOut(PurchaseIn):
-    id: ValueID
-    customer: ValueID | BaseUser
+    id: ValueId = Field(alias="_id")
+    customer: ValueId | BaseUser

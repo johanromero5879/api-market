@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from app.common.domain import Repository, ValueID
+from app.common.domain import Repository, ValueId
 from app.auth.domain import AuthOut, AuthIn
 
 
@@ -14,5 +14,5 @@ class AuthRepository(Repository):
         pass
 
     @abstractmethod
-    def insert_one(self, user: AuthIn) -> ValueID:
+    def insert_one(self, user: AuthIn) -> ValueId:
         pass

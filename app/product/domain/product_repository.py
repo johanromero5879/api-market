@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from app.common.domain import Repository, ValueID
+from app.common.domain import Repository, ValueId
 from app.product.domain import ProductIn, ProductOut, ProductPatch
 
 
@@ -9,15 +9,15 @@ class ProductRepository(Repository):
         pass
 
     @abstractmethod
-    def update_one(self, id: ValueID, product: ProductPatch) -> ProductOut:
+    def update_one(self, id: ValueId, product: ProductPatch) -> ProductOut:
         pass
 
     @abstractmethod
-    def decrease_stock(self, id: ValueID, quantity: float, session):
+    def decrease_stock(self, id: ValueId, quantity: float, session):
         pass
 
     @abstractmethod
-    def delete_one(self, id: ValueID):
+    def delete_one(self, id: ValueId):
         pass
 
     @abstractmethod

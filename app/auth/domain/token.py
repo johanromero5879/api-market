@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from app.common.domain import ValueID
+from app.common.domain import ValueId
 
 
 class Token(BaseModel):
@@ -8,4 +8,4 @@ class Token(BaseModel):
 
 
 class TokenData(BaseModel):
-    user_id: ValueID | None = None
+    user_id: ValueId | None = None

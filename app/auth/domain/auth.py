@@ -1,14 +1,18 @@
-from pydantic import BaseModel
+from pydantic import Field
 
-from app.common.domain import ValueID
-from app.user.domain import BaseUser
+from app.common.domain import ValueId, Model
+from app.user.domain import BaseUser, UserIn
 
 
-class AuthOut(BaseModel):
-    id: ValueID
+class AuthOut(Model):
+    id: ValueId = Field(alias="_id")
     email: str
     password: str
 
 
-class AuthIn(BaseUser):
+class BaseAuth(BaseUser):
+    password: str
+
+
+class AuthIn(UserIn):
     password: str

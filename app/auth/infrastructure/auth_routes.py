@@ -4,7 +4,7 @@ from dependency_injector.wiring import Provide, inject
 
 from app.user.application import UserFoundError
 from app.auth.application import Token, CredentialsError, AuthService
-from app.auth.domain import AuthIn
+from app.auth.domain import BaseAuth
 
 router = APIRouter(
     prefix="/auth",
@@ -31,7 +31,7 @@ async def login(
 @router.post("/signup", response_model=Token, status_code=status.HTTP_201_CREATED)
 @inject
 async def signup(
-    user: AuthIn,
+    user: BaseAuth,
     auth_service: AuthService = Depends(Provide["services.auth"])
 ):
     try:

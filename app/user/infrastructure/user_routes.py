@@ -4,7 +4,7 @@ from dependency_injector.wiring import Provide, inject
 from app.user.domain import UserOut, UserPatch
 from app.user.application import UserNotFoundError, UserFoundError, UserService
 from app.auth.infrastructure import get_current_user
-from app.common.domain import ValueID
+from app.common.domain import ValueId
 
 router = APIRouter(
     prefix="/users",
@@ -33,7 +33,7 @@ async def users(
 @router.get("/{id}", response_model=UserOut)
 @inject
 async def user(
-    id: ValueID,
+    id: ValueId,
     user_service: UserService = Depends(Provide["services.user"])
 ):
     try:
@@ -45,7 +45,7 @@ async def user(
 @router.patch("/{id}", response_model=UserOut)
 @inject
 async def update(
-    id: ValueID,
+    id: ValueId,
     user: UserPatch,
     user_service: UserService = Depends(Provide["services.user"])
 ):
@@ -60,7 +60,7 @@ async def update(
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 @inject
 async def delete(
-    id: ValueID,
+    id: ValueId,
     user_service: UserService = Depends(Provide["services.user"])
 ):
     try:

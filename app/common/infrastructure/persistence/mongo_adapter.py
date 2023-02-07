@@ -1,5 +1,5 @@
-from typing import TypeVar, Generic
-from abc import ABC, abstractmethod
+from typing import TypeVar, Generic, Mapping, Any
+from abc import ABC
 from bson import ObjectId
 
 from pymongo import MongoClient
@@ -9,7 +9,7 @@ from pymongo.database import Database, Collection
 Model = TypeVar("Model")
 
 
-class MongoRepository(Generic[Model], ABC):
+class MongoAdapter(Generic[Model], ABC):
     __client: MongoClient
     __db: Database
     _collection: Collection
@@ -19,20 +19,19 @@ class MongoRepository(Generic[Model], ABC):
         self.__db = self.__client.get_database()
         self._collection = self.__db.get_collection(collection_name)
 
-    @abstractmethod
-    def _get_model_instance(self, object: dict) -> Model:
-        """
-        :param object: Object mapped over a mongo query result
-        :return: Model instance
-        """
-        pass
-
     def _get_model_list(self, items: Cursor) -> list[Model]:
         """
         :param items: Iterator over mongo query results
         :return: List of model instances
         """
         return [self._get_model_instance(item) for item in items]
+
+    def _get_model_instance(self, document: Mapping[str, Any]) -> Model:
+        """
+        :param document: Object mapped over a mongo query result
+        :return: Model instance
+        """
+        pass
 
     def _get_format_filter(self, field: str, value):
         """
@@ -45,16 +44,10 @@ class MongoRepository(Generic[Model], ABC):
         if field == "id":
             field = "_id"
 
-        if self.is_object_id(value):
-            value = self.get_object_id(value)
+        if ObjectId.is_valid(value):
+            value = ObjectId(value)
 
         return field, value
-
-    def is_object_id(self, id) -> bool:
-        return ObjectId.is_valid(id)
-
-    def get_object_id(self, id: str) -> ObjectId:
-        return ObjectId(id)
 
     def disconnect(self):
         self.__client.close()

@@ -1,23 +1,15 @@
+from typing import Mapping, Any
+
+from bson import ObjectId
 from pymongo import MongoClient
 from pymongo.client_session import ClientSession
 
-from app.common.domain import ValueID
-from app.common.infrastructure import MongoRepository
+
+from app.common.infrastructure import MongoAdapter
 from app.product.domain import ProductRepository, ProductOut, ProductIn, ProductPatch
-from app.product.application import ProductNotFoundError
 
 
-class MongoProductRepository(MongoRepository[ProductOut], ProductRepository):
-
-    __project = {
-        "id": "$_id",
-        "_id": 0,
-        "name": 1,
-        "description": 1,
-        "unit_price": 1,
-        "stock": 1,
-        "owner": 1
-    }
+class MongoProductRepository(MongoAdapter[ProductOut], ProductRepository):
 
     __lookup_owner = {
         "from": "users",
@@ -43,62 +35,40 @@ class MongoProductRepository(MongoRepository[ProductOut], ProductRepository):
     def __init__(self, client: MongoClient | None = None):
         super().__init__("products", client)
 
-    def _get_model_instance(self, product: dict) -> ProductOut:
-        product["id"] = str(product["id"])
-
-        if "owner" in product:
-            if self.is_object_id(product["owner"]):
-                product["owner"] = str(product["owner"])
-            else:
-                product["owner"]["id"] = str(product["owner"]["id"])
-
+    def _get_model_instance(self, product: Mapping[str, Any]) -> ProductOut:
         return ProductOut(**product)
 
     def insert_one(self, product: ProductIn) -> ProductOut:
-        product.owner = self.get_object_id(product.owner)
-
         product_id = self._collection.insert_one(product.dict(exclude_none=True)).inserted_id
 
-        product = ProductOut(**product.dict())
-        product.id = str(product_id)
-        product.owner = str(product.owner)
+        return ProductOut(
+            id=product_id,
+            **product.dict()
+        )
 
-        return product
-
-    def update_one(self, id: str, product: ProductPatch) -> ProductOut:
-        if not self.is_object_id(id):
-            raise ProductNotFoundError()
+    def update_one(self, id: ObjectId, product: ProductPatch) -> ProductOut:
 
         product_updated = self._collection.find_one_and_update(
-            {"_id": self.get_object_id(id)},
+            {"_id": id},
             {"$set": product.dict(exclude_none=True)},
-            self.__project,
             return_document=True
         )
 
         return self._get_model_instance(product_updated)
 
-    def decrease_stock(self, id: str, quantity: float, session: ClientSession):
-
-        if not self.is_object_id(id):
-            raise ProductNotFoundError()
-
+    def decrease_stock(self, id: ObjectId, quantity: float, session: ClientSession):
         self._collection.update_one(
-            {"_id": self.get_object_id(id)},
+            {"_id": id},
             {"$inc": {"stock": -quantity}},
             session=session
         )
 
-    def delete_one(self, id: str):
-        if not self.is_object_id(id):
-            raise ProductNotFoundError()
-
-        self._collection.delete_one({"_id": self.get_object_id(id)})
+    def delete_one(self, id: ObjectId):
+        self._collection.delete_one({"_id": id})
 
     def find_all(self, limit: int, skip: int, owner_schema: bool = True) -> list[ProductOut]:
         if owner_schema:
             products = self._collection.aggregate([
-                {"$project": self.__project},
                 {"$lookup": self.__lookup_owner},
                 {"$unwind": self.__unwind_owner},
                 {"$sort": {"name": 1}},
@@ -106,7 +76,7 @@ class MongoProductRepository(MongoRepository[ProductOut], ProductRepository):
                 {"$limit": limit}
             ])
         else:
-            products = self._collection.find(projection=self.__project)\
+            products = self._collection.find()\
                         .sort("name", 1).skip(skip).limit(limit)
 
         return self._get_model_list(products)
@@ -117,7 +87,6 @@ class MongoProductRepository(MongoRepository[ProductOut], ProductRepository):
         if owner_schema:
             product = self._collection.aggregate([
                 {"$match": {field: value}},
-                {"$project": self.__project},
                 {"$lookup": self.__lookup_owner},
                 {"$unwind": self.__unwind_owner},
                 {"$limit": 1}
@@ -125,7 +94,7 @@ class MongoProductRepository(MongoRepository[ProductOut], ProductRepository):
 
             product = product.next()
         else:
-            product = self._collection.find_one({field: value}, self.__project)
+            product = self._collection.find_one({field: value})
 
         if product:
             return self._get_model_instance(product)

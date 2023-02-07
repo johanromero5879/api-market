@@ -1,7 +1,7 @@
-from app.common.domain import ValueID
+from app.common.domain import ValueId
 from app.user.domain import UserIn
 from app.user.application import UserFoundError
-from app.auth.domain import AuthRepository, Token, TokenData, AuthIn
+from app.auth.domain import AuthRepository, Token, TokenData, AuthIn, BaseAuth
 from app.auth.application import CredentialsError
 from app.common.application import JWTService, BCryptService, Service
 
@@ -28,9 +28,9 @@ class AuthService(Service):
 
         return self.__create_user_token(user_found.id)
 
-    def register_user(self, user: AuthIn) -> Token:
+    def register_user(self, user: BaseAuth) -> Token:
         # Transform to UserIn instances to set default attributes before create them
-        user = UserIn(**user.dict())
+        user = AuthIn(**user.dict())
 
         # By default, users get $500 to try out the app
         user.budget = 500
@@ -55,7 +55,7 @@ class AuthService(Service):
         except Exception:
             raise CredentialsError()
 
-    def __create_user_token(self, id: ValueID) -> Token:
+    def __create_user_token(self, id: ValueId) -> Token:
         payload = {"sub": f"user_id:{id}"}
 
         return Token(

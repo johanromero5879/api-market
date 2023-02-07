@@ -1,11 +1,10 @@
-from datetime import datetime
 from dependency_injector.wiring import Provide, inject
 
-from app.common.domain import ValueID
+from app.common.domain import ValueId
 from app.common.application import Service, Transaction
 from app.product.domain import ProductRepository
 from app.product.application import ProductNotFoundError
-from app.purchase.domain import PurchaseRepository, BasePurchase, BaseItemDetail, ItemDetail, PurchaseIn
+from app.purchase.domain import PurchaseRepository, BasePurchase, BaseDetail, Detail, PurchaseIn
 from app.purchase.application import EmptyDetailError, NotEnoughStockError, NoCustomerError, NotEnoughBudgetError
 from app.user.domain import UserRepository
 
@@ -42,8 +41,7 @@ class PurchaseService(Service):
             purchase = PurchaseIn(
                 customer=purchase.customer,
                 detail=purchase.detail,
-                total=total,
-                created_at=datetime.now()
+                total=total
             )
 
             # Make a record of the purchase
@@ -59,7 +57,7 @@ class PurchaseService(Service):
 
             raise error
 
-    def __process_detail(self, detail: list[BaseItemDetail], session) -> (float, list[ItemDetail]):
+    def __process_detail(self, detail: list[BaseDetail], session) -> (float, list[Detail]):
         """
         :param detail: list of items
         :return: tuple when first parameter is total of all items, second one the detail list with additional info
@@ -70,15 +68,15 @@ class PurchaseService(Service):
         total: float = 0
 
         for index, item in enumerate(detail):
-            product = self.__product_repository.find_by("id", item.id, owner_schema=False)
+            product = self.__product_repository.find_by("id", item.product_id, owner_schema=False)
 
             if not product:
-                raise ProductNotFoundError(id=item.id)
+                raise ProductNotFoundError(id=item.product_id)
 
             if product.stock == 0 or item.quantity > product.stock:
                 raise NotEnoughStockError(item_name=product.name)
 
-            item = ItemDetail(
+            item = Detail(
                 **item.dict(),
                 name=product.name,
                 unit_price=product.unit_price,
@@ -93,7 +91,7 @@ class PurchaseService(Service):
 
         return total, detail
 
-    def __process_payment(self, user_id: ValueID, cost: float, session):
+    def __process_payment(self, user_id: ValueId, cost: float, session):
         user = self.__user_repository.find_budget(user_id)
 
         if not user or user.budget < cost:

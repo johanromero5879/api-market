@@ -1,10 +1,10 @@
-from pydantic import BaseModel
+from pydantic import Field
 
-from app.common.domain import ValueID
+from app.common.domain import ValueId, Model
 from app.user.domain import BaseUser
 
 
-class BaseProduct(BaseModel):
+class BaseProduct(Model):
     name: str
     description: str
     unit_price: float
@@ -12,12 +12,12 @@ class BaseProduct(BaseModel):
 
 
 class ProductIn(BaseProduct):
-    owner: ValueID | None
+    owner: ValueId | None
 
 
 class ProductOut(BaseProduct):
-    id: ValueID
-    owner: ValueID | BaseUser | None
+    id: ValueId = Field(alias="_id")
+    owner: ValueId | BaseUser | None
 
 
 class ProductPatch(BaseProduct):

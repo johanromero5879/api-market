@@ -1,9 +1,9 @@
-from pydantic import BaseModel
+from pydantic import Field
 
-from app.common.domain import ValueID
+from app.common.domain import ValueId, Model
 
 
-class BaseUser(BaseModel):
+class BaseUser(Model):
     first_name: str
     last_name: str
     email: str
@@ -21,10 +21,10 @@ class UserIn(BaseUser):
 
 
 class UserOut(BaseUser):
-    id: ValueID
+    id: ValueId = Field(alias="_id")
     disabled: bool
 
 
-class UserBudget(BaseModel):
-    id: ValueID
+class UserBudget(Model):
+    id: ValueId = Field(alias="_id")
     budget: float

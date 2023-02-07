@@ -1,14 +1,15 @@
+from typing import Mapping, Any
+
 from pymongo import MongoClient
 
-from app.common.infrastructure import MongoRepository
+from app.common.domain import PyObjectId
+from app.common.infrastructure import MongoAdapter
 from app.auth.domain import AuthRepository, AuthOut, AuthIn
 
 
-class MongoAuthRepository(MongoRepository[AuthOut], AuthRepository):
-
+class MongoAuthRepository(MongoAdapter[AuthOut], AuthRepository):
     __project = {
-        "_id": 0,
-        "id": "$_id",
+        "_id": 1,
         "email": 1,
         "password": 1
     }
@@ -16,15 +17,12 @@ class MongoAuthRepository(MongoRepository[AuthOut], AuthRepository):
     def __init__(self, client: MongoClient | None = None):
         super().__init__("users", client)
 
-    def _get_model_instance(self, user: dict) -> AuthOut:
-        user["id"] = str(user["id"])
-        if "password" not in user:
-            user["password"] = ""
-
+    def _get_model_instance(self, user: Mapping[str, Any]) -> AuthOut:
         return AuthOut(**user)
 
     def find_by(self, field: str, value) -> AuthOut | None:
         field, value = self._get_format_filter(field, value)
+
         user = self._collection.find_one({field: value}, self.__project)
 
         if user:
@@ -32,10 +30,12 @@ class MongoAuthRepository(MongoRepository[AuthOut], AuthRepository):
 
     def exists_by(self, field: str, value) -> bool:
         field, value = self._get_format_filter(field, value)
+
         user = self._collection.find_one({field: value}, {"_id": 1})
 
         return bool(user)
 
-    def insert_one(self, user: AuthIn) -> str:
-        user_id = self._collection.insert_one(user.dict(exclude_none=True)).inserted_id
-        return str(user_id)
+    def insert_one(self, user: AuthIn) -> PyObjectId:
+        user_id = self._collection\
+                        .insert_one(user.dict(exclude_none=True)).inserted_id
+        return user_id

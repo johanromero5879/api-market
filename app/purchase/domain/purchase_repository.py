@@ -10,9 +10,9 @@ class PurchaseRepository(Repository):
         pass
 
     @abstractmethod
-    def find_by(self, field, value) -> PurchaseOut:
+    def find_by(self, field: str, value) -> PurchaseOut:
         pass
 
     @abstractmethod
-    def find(self, field, value) -> list[PurchaseOut]:
+    def find(self, field: str, value) -> list[PurchaseOut]:
         pass

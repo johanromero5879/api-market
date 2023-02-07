@@ -7,7 +7,7 @@ from app.product.domain import ProductPatch, ProductOut, ProductIn
 from app.user.domain import UserOut
 from app.product.application import ProductFoundError, ProductNotFoundError, ProductService
 
-from app.common.domain import ValueID
+from app.common.domain import ValueId
 
 router = APIRouter(
     prefix="/products",
@@ -31,7 +31,7 @@ async def get_products(
 @router.get("/{id}", response_model=ProductOut)
 @inject
 async def get_product(
-    id: ValueID,
+    id: ValueId,
     product_service: ProductService = Depends(Provide["services.product"])
 ):
     try:
@@ -69,7 +69,7 @@ async def register(
 )
 @inject
 async def update(
-    id: ValueID,
+    id: ValueId,
     product: ProductPatch,
     product_service: ProductService = Depends(Provide["services.product"])
 ):
@@ -85,7 +85,7 @@ async def update(
     status_code=status.HTTP_204_NO_CONTENT)
 @inject
 async def delete(
-    id: ValueID,
+    id: ValueId,
     product_service: ProductService = Depends(Provide["services.product"])
 ):
     try:
