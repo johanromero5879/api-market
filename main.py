@@ -7,5 +7,5 @@ import uvicorn
 load_dotenv()
 
 if __name__ == "__main__":
-    PORT: int = int(getenv("PORT")) if bool(getenv("PORT")) else 3000
+    PORT: int = int(getenv("PORT")) if getenv("PORT") else 3000
     uvicorn.run("app:app", host="0.0.0.0", port=PORT, reload=True)

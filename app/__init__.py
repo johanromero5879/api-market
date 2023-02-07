@@ -1,5 +1,3 @@
-import sys
-
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -11,7 +9,7 @@ from app.product.infrastructure import product_routes
 from app.user.infrastructure import user_routes
 from app.auth.infrastructure import auth_routes
 
-from app.containers import Container
+from containers import Container
 
 # Dependency Injection Container
 container = Container()
