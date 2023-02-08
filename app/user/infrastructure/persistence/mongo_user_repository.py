@@ -11,7 +11,8 @@ from app.user.domain import UserRepository, UserBudget, UserOut, UserPatch
 class MongoUserRepository(MongoAdapter[UserOut], UserRepository):
 
     __project = {
-        "_id": 1,
+        "_id": 0,
+        "id": "$_id",
         "first_name": 1,
         "last_name": 1,
         "email": 1,
@@ -60,7 +61,7 @@ class MongoUserRepository(MongoAdapter[UserOut], UserRepository):
     def find_budget(self, id: ObjectId) -> UserBudget | None:
         user = self._collection.find_one(
             {"_id": id},
-            {"_id": 1, "budget": 1}
+            {"_id": 0, "id": "$_id", "budget": 1}
         )
 
         if user:

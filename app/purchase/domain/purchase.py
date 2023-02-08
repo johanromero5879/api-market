@@ -30,5 +30,5 @@ class PurchaseIn(BasePurchase):
 
 
 class PurchaseOut(PurchaseIn):
-    id: ValueId = Field(alias="_id")
+    id: ValueId
     customer: ValueId | BaseUser

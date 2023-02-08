@@ -1,5 +1,3 @@
-from pydantic import Field
-
 from app.common.domain import ValueId, Model
 from app.user.domain import BaseUser
 
@@ -16,7 +14,7 @@ class ProductIn(BaseProduct):
 
 
 class ProductOut(BaseProduct):
-    id: ValueId = Field(alias="_id")
+    id: ValueId
     owner: ValueId | BaseUser | None
 
 

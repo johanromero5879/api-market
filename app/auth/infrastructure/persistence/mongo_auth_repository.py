@@ -9,7 +9,8 @@ from app.auth.domain import AuthRepository, AuthOut, AuthIn
 
 class MongoAuthRepository(MongoAdapter[AuthOut], AuthRepository):
     __project = {
-        "_id": 1,
+        "_id": 0,
+        "id": "$_id",
         "email": 1,
         "password": 1
     }

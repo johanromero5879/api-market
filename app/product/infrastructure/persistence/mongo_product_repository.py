@@ -10,6 +10,15 @@ from app.product.domain import ProductRepository, ProductOut, ProductIn, Product
 
 
 class MongoProductRepository(MongoAdapter[ProductOut], ProductRepository):
+    __project = {
+        "_id": 0,
+        "id": "$_id",
+        "name": 1,
+        "description": 1,
+        "unit_price": 1,
+        "stock": 1,
+        "owner": 1
+    }
 
     __lookup_owner = {
         "from": "users",
@@ -51,6 +60,7 @@ class MongoProductRepository(MongoAdapter[ProductOut], ProductRepository):
         product_updated = self._collection.find_one_and_update(
             {"_id": id},
             {"$set": product.dict(exclude_none=True)},
+            self.__project,
             return_document=True
         )
 
@@ -69,6 +79,7 @@ class MongoProductRepository(MongoAdapter[ProductOut], ProductRepository):
     def find_all(self, limit: int, skip: int, owner_schema: bool = True) -> list[ProductOut]:
         if owner_schema:
             products = self._collection.aggregate([
+                {"$project": self.__project},
                 {"$lookup": self.__lookup_owner},
                 {"$unwind": self.__unwind_owner},
                 {"$sort": {"name": 1}},
@@ -76,7 +87,7 @@ class MongoProductRepository(MongoAdapter[ProductOut], ProductRepository):
                 {"$limit": limit}
             ])
         else:
-            products = self._collection.find()\
+            products = self._collection.find(projection=self.__project)\
                         .sort("name", 1).skip(skip).limit(limit)
 
         return self._get_model_list(products)
@@ -87,6 +98,7 @@ class MongoProductRepository(MongoAdapter[ProductOut], ProductRepository):
         if owner_schema:
             product = self._collection.aggregate([
                 {"$match": {field: value}},
+                {"$project": self.__project},
                 {"$lookup": self.__lookup_owner},
                 {"$unwind": self.__unwind_owner},
                 {"$limit": 1}
@@ -94,7 +106,7 @@ class MongoProductRepository(MongoAdapter[ProductOut], ProductRepository):
 
             product = product.next()
         else:
-            product = self._collection.find_one({field: value})
+            product = self._collection.find_one({field: value}, self.__project)
 
         if product:
             return self._get_model_instance(product)
