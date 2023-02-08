@@ -1,4 +1,5 @@
 from os import getenv
+import asyncio
 
 from dotenv import load_dotenv
 import uvicorn
@@ -6,6 +7,13 @@ import uvicorn
 # Load environment variables
 load_dotenv()
 
+
+async def start_server(host:str, port: int):
+    uvicorn.run("app:app", host=host, port=port, reload=True)
+
+
 if __name__ == "__main__":
-    PORT: int = int(getenv("PORT")) if getenv("PORT") else 3000
-    uvicorn.run("app:app", host="0.0.0.0", port=PORT, reload=True)
+    host: str = getenv("HOST") if getenv("HOST") else "127.0.0.1"
+    port: int = int(getenv("PORT")) if getenv("PORT") else 3000
+
+    asyncio.run(start_server(host, port))
