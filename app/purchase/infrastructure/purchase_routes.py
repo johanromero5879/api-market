@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, status, HTTPException
 from dependency_injector.wiring import Provide, inject
 
 from app.product.application import ProductNotFoundError
-from app.purchase.domain import PurchaseOut, BasePurchase
+from app.purchase.domain import PurchaseOut, BasePurchase, BaseDetail
 from app.purchase.application import PurchaseService, NotEnoughStockError, EmptyDetailError, NotEnoughBudgetError
 from app.user.domain import UserOut
 
@@ -17,12 +17,15 @@ router = APIRouter(
 @router.post(path="/", response_model=PurchaseOut, status_code=status.HTTP_201_CREATED)
 @inject
 def purchase_products(
-    purchase: BasePurchase,
+    detail: list[BaseDetail],
     customer: UserOut = Depends(get_current_user),
     purchase_service: PurchaseService = Depends(Provide["services.purchase"])
 ):
-    # Set customer id into customer property of the purchase
-    purchase.customer = customer.id
+
+    purchase = BasePurchase(
+        customer=customer.id,  # Set customer id into customer property of the purchase
+        detail=detail
+    )
 
     try:
         return purchase_service.purchase(purchase)
