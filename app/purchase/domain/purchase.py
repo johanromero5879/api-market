@@ -18,12 +18,11 @@ class Detail(BaseDetail):
 
 
 class BasePurchase(Model):
-    customer: ValueId | None
+    customer: ValueId
     detail: list[BaseDetail]
 
 
 class PurchaseIn(BasePurchase):
-    customer: ValueId
     detail: list[Detail]
     total: float
     created_at: datetime = Field(default_factory=datetime.utcnow)
