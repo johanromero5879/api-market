@@ -3,6 +3,7 @@ from dependency_injector.wiring import Provide, inject
 
 from app.user.domain import UserOut, UserPatch
 from app.user.application import UserNotFoundError, UserFoundError, UserService
+from app.user.infrastructure import verify_same_user
 from app.auth.infrastructure import get_current_user
 from app.common.domain import ValueId
 
@@ -30,7 +31,7 @@ async def users(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
 
-@router.get("/{id}", response_model=UserOut)
+@router.get(path="/{id}", response_model=UserOut)
 @inject
 async def user(
     id: ValueId,
@@ -42,7 +43,11 @@ async def user(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))
 
 
-@router.patch("/{id}", response_model=UserOut)
+@router.patch(
+    path="/{id}",
+    response_model=UserOut,
+    dependencies=[Depends(verify_same_user)]
+)
 @inject
 async def update(
     id: ValueId,
@@ -57,7 +62,11 @@ async def update(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
 
-@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    path="/{id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(verify_same_user)]
+)
 @inject
 async def delete(
     id: ValueId,
