@@ -37,7 +37,7 @@ class Services(containers.DeclarativeContainer):
 
     purchase = providers.Singleton(
         PurchaseService,
-        repository=repositories.purchase,
+        purchase_repository=repositories.purchase,
         product_repository=repositories.product,
         user_repository=repositories.user
     )

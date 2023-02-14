@@ -1,5 +1,4 @@
 from app.common.domain import ValueId
-from app.user.domain import UserIn
 from app.user.application import UserFoundError
 from app.auth.domain import AuthRepository, Token, TokenData, AuthIn, BaseAuth
 from app.auth.application import CredentialsError
@@ -7,7 +6,7 @@ from app.common.application import JWTService, BCryptService, Service
 
 
 class AuthService(Service):
-    _repository: AuthRepository
+    __repository: AuthRepository
     __jwt_service: JWTService
     __bcrypt_service: BCryptService
 
@@ -16,12 +15,12 @@ class AuthService(Service):
                  jwt_service: JWTService,
                  bcrypt_service: BCryptService
                  ):
-        super().__init__(repository)
+        self.__repository = repository
         self.__jwt_service = jwt_service
         self.__bcrypt_service = bcrypt_service
 
     def authenticate_user(self, email: str, password: str) -> Token:
-        user_found = self._repository.find_by("email", email)
+        user_found = self.__repository.find_by("email", email)
 
         if not user_found or not self.__bcrypt_service.compare(password, user_found.password):
             raise CredentialsError()
@@ -35,12 +34,12 @@ class AuthService(Service):
         # By default, users get $500 to try out the app
         user.budget = 500
 
-        if self._repository.exists_by("email", user.email):
+        if self.__repository.exists_by("email", user.email):
             raise UserFoundError(email=user.email)
 
         user.password = self.__bcrypt_service.create_hash(user.password)
 
-        user_id = self._repository.insert_one(user)
+        user_id = self.__repository.insert_one(user)
 
         return self.__create_user_token(user_id)
 

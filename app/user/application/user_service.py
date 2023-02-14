@@ -6,10 +6,10 @@ from app.common.domain.value_id import ValueId
 
 
 class UserService(Service):
-    _repository: UserRepository
+    __repository: UserRepository
 
     def __init__(self, repository: UserRepository):
-        super().__init__(repository)
+        self.__repository = repository
 
     def get_all(self, limit: int, page: int):
         if limit <= 0 or limit > 20:
@@ -20,10 +20,10 @@ class UserService(Service):
 
         skip = (page - 1) * limit
 
-        return self._repository.find_all(limit, skip)
+        return self.__repository.find_all(limit, skip)
 
     def get_by(self, field: str, value):
-        user = self._repository.find_by(field, value)
+        user = self.__repository.find_by(field, value)
 
         if not user:
             raise UserNotFoundError()
@@ -31,18 +31,18 @@ class UserService(Service):
         return user
 
     def update_one(self, id: ValueId, user: UserPatch):
-        if not self._repository.exists_by("id", id):
+        if not self.__repository.exists_by("id", id):
             raise UserNotFoundError(id=id)
 
         if bool(user.email):
-            user_found = self._repository.find_by("email", user.email)
+            user_found = self.__repository.find_by("email", user.email)
             if user_found and user_found.id != id:
                 raise UserFoundError(email=user.email)
 
-        return self._repository.update_one(id, user)
+        return self.__repository.update_one(id, user)
 
     def delete(self, id: ValueId):
-        if not self._repository.exists_by("id", id):
+        if not self.__repository.exists_by("id", id):
             raise UserNotFoundError(id=id)
 
-        self._repository.delete(id)
+        self.__repository.delete(id)

@@ -10,15 +10,16 @@ from app.user.domain import UserRepository
 
 
 class PurchaseService(Service):
-    _repository: PurchaseRepository
+    __purchase_repository: PurchaseRepository
     __product_repository: ProductRepository
+    __user_repository: UserRepository
 
     def __init__(self,
-                 repository: PurchaseRepository,
+                 purchase_repository: PurchaseRepository,
                  product_repository: ProductRepository,
                  user_repository: UserRepository
                  ):
-        super().__init__(repository)
+        self.__purchase_repository = purchase_repository
         self.__product_repository = product_repository
         self.__user_repository = user_repository
 
@@ -45,7 +46,7 @@ class PurchaseService(Service):
             )
 
             # Make a record of the purchase
-            purchase = self._repository.insert_one(purchase, transaction.get_session())
+            purchase = self.__purchase_repository.insert_one(purchase, transaction.get_session())
 
             # Commit transaction to send changes to database
             transaction.commit()
@@ -99,4 +100,3 @@ class PurchaseService(Service):
 
         # Reduce cost purchase from user budget
         self.__user_repository.reduce_budget(user.id, cost, session)
-
