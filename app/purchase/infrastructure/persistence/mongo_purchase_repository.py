@@ -1,5 +1,6 @@
 from typing import Mapping, Any
 
+from bson import ObjectId
 from pymongo import MongoClient
 from pymongo.client_session import ClientSession
 
@@ -12,8 +13,11 @@ class MongoPurchaseRepository(MongoAdapter[PurchaseOut], PurchaseRepository):
     def __init__(self, client: MongoClient | None = None):
         super().__init__("purchases", client)
 
-    def _get_model_instance(self, document: Mapping[str, Any]) -> PurchaseOut:
-        return PurchaseOut(**document)
+    def find(self, field: str, value) -> list[PurchaseOut]:
+        pass
+
+    def find_by(self, field: str, value) -> PurchaseOut:
+        pass
 
     def insert_one(self, purchase: PurchaseIn, session: ClientSession) -> PurchaseOut:
 
@@ -27,8 +31,11 @@ class MongoPurchaseRepository(MongoAdapter[PurchaseOut], PurchaseRepository):
             **purchase.dict(),
         )
 
-    def find_by(self, field: str, value) -> PurchaseOut:
-        pass
+    def delete_one(self, id: ObjectId, session: ClientSession):
+        self._collection.delete_one(
+            filter={"_id": id},
+            session=session
+        )
 
-    def find(self, field: str, value) -> list[PurchaseOut]:
-        pass
+    def _get_model_instance(self, document: Mapping[str, Any]) -> PurchaseOut:
+        return PurchaseOut(**document)

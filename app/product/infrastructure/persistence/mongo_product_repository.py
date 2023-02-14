@@ -44,38 +44,6 @@ class MongoProductRepository(MongoAdapter[ProductOut], ProductRepository):
     def __init__(self, client: MongoClient | None = None):
         super().__init__("products", client)
 
-    def _get_model_instance(self, product: Mapping[str, Any]) -> ProductOut:
-        return ProductOut(**product)
-
-    def insert_one(self, product: ProductIn) -> ProductOut:
-        product_id = self._collection.insert_one(product.dict(exclude_none=True)).inserted_id
-
-        return ProductOut(
-            id=product_id,
-            **product.dict()
-        )
-
-    def update_one(self, id: ObjectId, product: ProductPatch) -> ProductOut:
-
-        product_updated = self._collection.find_one_and_update(
-            {"_id": id},
-            {"$set": product.dict(exclude_none=True)},
-            self.__project,
-            return_document=True
-        )
-
-        return self._get_model_instance(product_updated)
-
-    def decrease_stock(self, id: ObjectId, quantity: float, session: ClientSession):
-        self._collection.update_one(
-            {"_id": id},
-            {"$inc": {"stock": -quantity}},
-            session=session
-        )
-
-    def delete_one(self, id: ObjectId):
-        self._collection.delete_one({"_id": id})
-
     def find_all(self, limit: int, skip: int, owner_schema: bool = True) -> list[ProductOut]:
         if owner_schema:
             products = self._collection.aggregate([
@@ -117,3 +85,42 @@ class MongoProductRepository(MongoAdapter[ProductOut], ProductRepository):
         product = self._collection.find_one({field: value}, {"_id": 1})
 
         return bool(product)
+
+    def insert_one(self, product: ProductIn) -> ProductOut:
+        product_id = self._collection.insert_one(product.dict(exclude_none=True)).inserted_id
+
+        return ProductOut(
+            id=product_id,
+            **product.dict()
+        )
+
+    def update_one(self, id: ObjectId, product: ProductPatch) -> ProductOut:
+
+        product_updated = self._collection.find_one_and_update(
+            {"_id": id},
+            {"$set": product.dict(exclude_none=True)},
+            self.__project,
+            return_document=True
+        )
+
+        return self._get_model_instance(product_updated)
+
+    def delete_one(self, id: ObjectId):
+        self._collection.delete_one({"_id": id})
+
+    def increase_stock(self, id: ObjectId, quantity: float, session: ClientSession):
+        self._collection.update_one(
+            {"_id": id},
+            {"$inc": {"stock": quantity}},
+            session=session
+        )
+
+    def decrease_stock(self, id: ObjectId, quantity: float, session: ClientSession):
+        self._collection.update_one(
+            {"_id": id},
+            {"$inc": {"stock": -quantity}},
+            session=session
+        )
+
+    def _get_model_instance(self, product: Mapping[str, Any]) -> ProductOut:
+        return ProductOut(**product)

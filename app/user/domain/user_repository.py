@@ -13,11 +13,11 @@ class UserRepository(Repository):
         pass
 
     @abstractmethod
-    def find_budget(self, id: ValueId) -> UserBudget | None:
+    def update_one(self, id: ValueId, user: UserPatch) -> UserOut:
         pass
 
     @abstractmethod
-    def reduce_budget(self, id: ValueId, cost: float, session):
+    def delete(self, id: ValueId):
         pass
 
     @abstractmethod
@@ -25,9 +25,13 @@ class UserRepository(Repository):
         pass
 
     @abstractmethod
-    def update_one(self, id: ValueId, user: UserPatch) -> UserOut:
+    def find_budget(self, id: ValueId) -> UserBudget | None:
         pass
 
     @abstractmethod
-    def delete(self, id: ValueId):
+    def raise_budget(self, id: ValueId, cost: float, session):
+        pass
+
+    @abstractmethod
+    def reduce_budget(self, id: ValueId, cost: float, session):
         pass

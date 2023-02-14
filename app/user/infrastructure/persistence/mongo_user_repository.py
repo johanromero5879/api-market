@@ -22,9 +22,6 @@ class MongoUserRepository(MongoAdapter[UserOut], UserRepository):
     def __init__(self, client: MongoClient | None = None):
         super().__init__("users", client)
 
-    def _get_model_instance(self, user: Mapping[str, Any]) -> UserOut:
-        return UserOut(**user)
-
     def find_all(self, limit: int, skip: int) -> list[UserOut]:
         users = self._collection.find({}, self.__project)\
             .skip(skip).limit(limit)
@@ -39,12 +36,6 @@ class MongoUserRepository(MongoAdapter[UserOut], UserRepository):
         if bool(user):
             return self._get_model_instance(user)
 
-    def exists_by(self, field: str, value) -> bool:
-        field, value = self._get_format_filter(field, value)
-
-        user = self._collection.find_one({field: value}, {"_id": 1})
-        return bool(user)
-
     def update_one(self, id: ObjectId, user: UserPatch) -> UserOut:
         user_updated = self._collection.find_one_and_update(
             {"_id": id},
@@ -58,6 +49,12 @@ class MongoUserRepository(MongoAdapter[UserOut], UserRepository):
     def delete(self, id: ObjectId):
         self._collection.delete_one({"_id": id})
 
+    def exists_by(self, field: str, value) -> bool:
+        field, value = self._get_format_filter(field, value)
+
+        user = self._collection.find_one({field: value}, {"_id": 1})
+        return bool(user)
+
     def find_budget(self, id: ObjectId) -> UserBudget | None:
         user = self._collection.find_one(
             {"_id": id},
@@ -67,9 +64,19 @@ class MongoUserRepository(MongoAdapter[UserOut], UserRepository):
         if user:
             return UserBudget(**user)
 
+    def raise_budget(self, id: ObjectId, cost: float, session: ClientSession):
+        self._collection.update_one(
+            filter={"_id": id},
+            update={"$inc": {"budget": cost}},
+            session=session
+        )
+
     def reduce_budget(self, id: ObjectId, cost: float, session: ClientSession):
         self._collection.update_one(
             filter={"_id": id},
             update={"$inc": {"budget": -cost}},
             session=session
         )
+
+    def _get_model_instance(self, user: Mapping[str, Any]) -> UserOut:
+        return UserOut(**user)
