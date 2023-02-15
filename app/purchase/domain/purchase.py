@@ -31,3 +31,4 @@ class PurchaseIn(BasePurchase):
 class PurchaseOut(PurchaseIn):
     id: ValueId
     customer: ValueId | BaseUser
+    created_at: datetime

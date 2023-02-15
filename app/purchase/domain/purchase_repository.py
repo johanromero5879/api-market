@@ -10,7 +10,7 @@ class PurchaseRepository(Repository):
         pass
 
     @abstractmethod
-    def find_by(self, field: str, value) -> PurchaseOut:
+    def find_by(self, field: str, value) -> PurchaseOut | None:
         pass
 
     @abstractmethod

@@ -20,3 +20,9 @@ class NotEnoughBudgetError(Exception):
     def __init__(self):
         self.message = f"Not enough budget for the purchase"
         super().__init__(self.message)
+
+
+class PurchaseNotFoundError(Exception):
+    def __init__(self):
+        self.message = "Purchase not found"
+        super().__init__(self.message)

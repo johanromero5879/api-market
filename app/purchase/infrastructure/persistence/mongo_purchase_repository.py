@@ -9,15 +9,32 @@ from app.common.infrastructure import MongoAdapter
 
 
 class MongoPurchaseRepository(MongoAdapter[PurchaseOut], PurchaseRepository):
+    __project = {
+        "_id": 0,
+        "id": "$_id",
+        "customer": 1,
+        "detail": 1,
+        "total": 1,
+        "created_at": 1
+    }
 
     def __init__(self, client: MongoClient | None = None):
         super().__init__("purchases", client)
 
     def find(self, field: str, value) -> list[PurchaseOut]:
-        pass
+        field, value = self._get_format_filter(field, value)
 
-    def find_by(self, field: str, value) -> PurchaseOut:
-        pass
+        purchases = self._collection.find_one({field: value}, self.__project)
+
+        return self._get_model_list(purchases)
+
+    def find_by(self, field: str, value) -> PurchaseOut | None:
+        field, value = self._get_format_filter(field, value)
+
+        purchase = self._collection.find_one({field: value}, self.__project)
+
+        if purchase:
+            return self._get_model_instance(purchase)
 
     def insert_one(self, purchase: PurchaseIn, session: ClientSession) -> PurchaseOut:
 

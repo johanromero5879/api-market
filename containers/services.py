@@ -2,7 +2,7 @@ from dependency_injector import containers, providers
 
 from app.common.application import JWTService, BCryptService
 from app.common.infrastructure import MongoTransaction
-from app.purchase.application import PurchaseService
+from app.purchase.application import PurchaseService, PurchaseRollbackService
 from app.product.application import ProductService
 from app.user.application import UserService
 from app.auth.application import AuthService
@@ -37,6 +37,13 @@ class Services(containers.DeclarativeContainer):
 
     purchase = providers.Singleton(
         PurchaseService,
+        purchase_repository=repositories.purchase,
+        product_repository=repositories.product,
+        user_repository=repositories.user
+    )
+
+    purchase_rollback = providers.Singleton(
+        PurchaseRollbackService,
         purchase_repository=repositories.purchase,
         product_repository=repositories.product,
         user_repository=repositories.user

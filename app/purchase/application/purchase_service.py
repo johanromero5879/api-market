@@ -5,7 +5,8 @@ from app.common.application import Service, Transaction
 from app.product.domain import ProductRepository
 from app.product.application import ProductNotFoundError
 from app.purchase.domain import PurchaseRepository, BasePurchase, BaseDetail, Detail, PurchaseIn
-from app.purchase.application import EmptyDetailError, NotEnoughStockError, NoCustomerError, NotEnoughBudgetError
+from app.purchase.application import EmptyDetailError, NotEnoughStockError, NoCustomerError, NotEnoughBudgetError, \
+    PurchaseNotFoundError
 from app.user.domain import UserRepository
 
 
@@ -22,6 +23,14 @@ class PurchaseService(Service):
         self.__purchase_repository = purchase_repository
         self.__product_repository = product_repository
         self.__user_repository = user_repository
+
+    def find_by(self, field: str, value):
+        purchase = self.__purchase_repository.find_by(field, value)
+
+        if not purchase:
+            raise PurchaseNotFoundError()
+
+        return purchase
 
     @inject
     def purchase(self, purchase: BasePurchase, transaction: Transaction = Provide["services.transaction"]):
@@ -100,3 +109,5 @@ class PurchaseService(Service):
 
         # Reduce cost purchase from user budget
         self.__user_repository.reduce_budget(user.id, cost, session)
+
+
