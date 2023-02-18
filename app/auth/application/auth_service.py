@@ -1,6 +1,6 @@
 from app.common.domain import ValueId
 from app.user.application import UserFoundError
-from app.auth.domain import AuthRepository, Token, TokenData, AuthIn, BaseAuth
+from app.auth.domain import AuthRepository, TokenData, AuthIn, BaseAuth
 from app.auth.application import CredentialsError
 from app.common.application import JWTService, BCryptService, Service
 
@@ -19,15 +19,18 @@ class AuthService(Service):
         self.__jwt_service = jwt_service
         self.__bcrypt_service = bcrypt_service
 
-    def authenticate_user(self, email: str, password: str) -> Token:
+    def exists_by(self, field: str, value):
+        return self.__repository.exists_by(field, value)
+
+    def authenticate_user(self, email: str, password: str) -> ValueId:
         user_found = self.__repository.find_by("email", email)
 
         if not user_found or not self.__bcrypt_service.compare(password, user_found.password):
             raise CredentialsError()
 
-        return self.__create_user_token(user_found.id)
+        return user_found.id
 
-    def register_user(self, user: BaseAuth) -> Token:
+    def register_user(self, user: BaseAuth) -> ValueId:
         # Transform to UserIn instances to set default attributes before create them
         user = AuthIn(**user.dict())
 
@@ -41,7 +44,19 @@ class AuthService(Service):
 
         user_id = self.__repository.insert_one(user)
 
-        return self.__create_user_token(user_id)
+        return user_id
+
+    def generate_user_tokens(self, id: ValueId) -> tuple[str, str]:
+        """
+        :param id: user id
+        :return: access token and refresh token
+        """
+
+        identifier = f"user_id:{id}"
+        access_token = self.__jwt_service.create_access_token(identifier)
+        refresh_token = self.__jwt_service.create_refresh_token(identifier)
+
+        return access_token, refresh_token
 
     def get_user_payload(self, token: str) -> TokenData:
         try:
@@ -53,11 +68,3 @@ class AuthService(Service):
             return TokenData(user_id=user_id)
         except Exception:
             raise CredentialsError()
-
-    def __create_user_token(self, id: ValueId) -> Token:
-        payload = {"sub": f"user_id:{id}"}
-
-        return Token(
-            access_token=self.__jwt_service.create_access_token(payload),
-            token_type="bearer"
-        )

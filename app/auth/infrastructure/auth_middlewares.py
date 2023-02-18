@@ -6,7 +6,7 @@ from app.user.domain import UserOut
 from app.user.application import UserNotFoundError, UserService
 from app.auth.application import CredentialsError, AuthService
 
-oauth2 = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2 = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 
 @inject
